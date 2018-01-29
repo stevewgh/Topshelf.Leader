@@ -2,7 +2,7 @@
 using System.Threading;
 using Topshelf.Leader.InMemory;
 
-namespace Topshelf.Leader.HighAvailability
+namespace Topshelf.Leader
 {
     public class LeaderConfigurationBuilder<T>
     {
@@ -13,7 +13,7 @@ namespace Topshelf.Leader.HighAvailability
         private TimeSpan timeBetweenLeaseUpdates;
         private TimeSpan timeBetweenCheckingLeaderHealth;
         private string uniqueIdentifier;
-        private IDistributedLockManager lockManager;
+        private ILockManager lockManager;
         private CancellationToken serviceIsStopping;
 
         public LeaderConfigurationBuilder()
@@ -21,10 +21,10 @@ namespace Topshelf.Leader.HighAvailability
             timeBetweenLeaseUpdates = DefaultTimeBetweenLeaseUpdates;
             timeBetweenCheckingLeaderHealth = DefaultTimeBetweenCheckingLeaderHealth;
             uniqueIdentifier = Guid.NewGuid().ToString();
-            lockManager = new InMemoryLockManager();
+            lockManager = new InMemoryLockManager(uniqueIdentifier);
         }
 
-        public LeaderConfigurationBuilder<T> WithLockManager(IDistributedLockManager manager)
+        public LeaderConfigurationBuilder<T> WithLockManager(ILockManager manager)
         {
             lockManager = manager ?? throw new ArgumentNullException(nameof(manager));
             return this;
@@ -36,7 +36,7 @@ namespace Topshelf.Leader.HighAvailability
             return this;
         }
 
-        public LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationToken serviceStopping)
+        internal LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationToken serviceStopping)
         {
             serviceIsStopping = serviceStopping;
             return this;
@@ -74,6 +74,11 @@ namespace Topshelf.Leader.HighAvailability
 
         internal LeaderConfiguration<T> Build()
         {
+            if (whenStarted == null)
+            {
+                throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
+            }
+
             return new LeaderConfiguration<T>(whenStarted, uniqueIdentifier, lockManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping);
         }
     }

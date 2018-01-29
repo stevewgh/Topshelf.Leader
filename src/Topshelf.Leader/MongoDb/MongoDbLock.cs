@@ -1,21 +1,22 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Topshelf.Leader.MongoDb
 {
-    public class MongoDbDistributedLock : IDistributedLockManager
+    public class MongoDbLock : ILockManager
     {
         private readonly IMongoCollection<BsonDocument> collection;
         private bool isInitialised = false;
 
-        public MongoDbDistributedLock(IMongoCollection<BsonDocument> collection)
+        public MongoDbLock(IMongoCollection<BsonDocument> collection)
         {
             this.collection = collection;
         }
 
-        public async Task<bool> AcquireLock(string nodeId)
+        public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
         {
             await Initialise();
 
@@ -24,12 +25,12 @@ namespace Topshelf.Leader.MongoDb
             var update = Builders<BsonDocument>.Update;
             var updateDef = update.Set("_id", FieldConstants.DocumentIdField).Set("nodeId", nodeId).Set(FieldConstants.LockExpiryField, DateTime.UtcNow.AddMinutes(5));
 
-            var result = await collection.FindOneAndUpdateAsync(filterDef, updateDef, new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+            var result = await collection.FindOneAndUpdateAsync(filterDef, updateDef, new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = false, ReturnDocument = ReturnDocument.After }, token);
 
             return result["nodeId"].ToString() == nodeId;
         }
 
-        public async Task<bool> RenewLock(string nodeId)
+        public async Task<bool> RenewLock(string nodeId, CancellationToken token)
         {
             await Initialise();
 
@@ -38,7 +39,7 @@ namespace Topshelf.Leader.MongoDb
             var update = Builders<BsonDocument>.Update;
             var updateDef = update.Set("_id", FieldConstants.DocumentIdField).Set(FieldConstants.LockExpiryField, DateTime.UtcNow.AddMinutes(5));
 
-            var result = await collection.FindOneAndUpdateAsync(filterDef, updateDef, new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+            var result = await collection.FindOneAndUpdateAsync(filterDef, updateDef, new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = false, ReturnDocument = ReturnDocument.After }, token);
 
             return result["nodeId"].ToString() == nodeId;
         }

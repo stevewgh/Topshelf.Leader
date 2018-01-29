@@ -1,4 +1,4 @@
-﻿namespace Topshelf.Leader
+﻿namespace Topshelf.Leader.MongoDb
 {
     public class FieldConstants
     {

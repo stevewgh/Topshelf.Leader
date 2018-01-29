@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Topshelf.Leader.HighAvailability
+namespace Topshelf.Leader
 {
     public static class TaskExtension
     {

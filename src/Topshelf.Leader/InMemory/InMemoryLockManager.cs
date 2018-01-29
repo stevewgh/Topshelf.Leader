@@ -1,12 +1,24 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Topshelf.Leader.InMemory
 {
-    public class InMemoryLockManager : IDistributedLockManager
+    public class InMemoryLockManager : ILockManager
     {
-        public Task<bool> AcquireLock(string nodeId)
+        private readonly string owningNodeId;
+
+        public InMemoryLockManager(string owningNodeId)
         {
-            return Task.FromResult(true);
+            this.owningNodeId = owningNodeId;
+        }
+        public Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        {
+            return Task.FromResult(nodeId == owningNodeId);
+        }
+
+        public Task<bool> RenewLock(string nodeId, CancellationToken token)
+        {
+            return Task.FromResult(nodeId == owningNodeId);
         }
     }
 }

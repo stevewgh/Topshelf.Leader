@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Threading;
 
-namespace Topshelf.Leader.HighAvailability
+namespace Topshelf.Leader
 {
     public class LeaderConfiguration<T>
     {
-        public LeaderConfiguration(Action<T, CancellationToken> startup, string uniqueIdentifier,
-            IDistributedLockManager lockManager, TimeSpan leaseUpdateEvery, TimeSpan leaderCheckEvery,
+        public LeaderConfiguration(
+            Action<T, CancellationToken> startup, 
+            string uniqueIdentifier,
+            ILockManager lockManager, 
+            TimeSpan leaseUpdateEvery, 
+            TimeSpan leaderCheckEvery,
             CancellationToken serviceIsStopping)
         {
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
@@ -43,6 +47,6 @@ namespace Topshelf.Leader.HighAvailability
 
         public Action<T, CancellationToken> Startup { get; }
 
-        public IDistributedLockManager LockManager { get; }
+        public ILockManager LockManager { get; }
     }
 }

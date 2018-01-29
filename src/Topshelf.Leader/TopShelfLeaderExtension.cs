@@ -3,11 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Topshelf.ServiceConfigurators;
 
-namespace Topshelf.Leader.HighAvailability
+namespace Topshelf.Leader
 {
     public static class TopShelfLeaderExtension
     {
-        public static ServiceConfigurator<T> WhenStartedAsLeader<T>(
+        public static void WhenStartedAsLeader<T>(
             this ServiceConfigurator<T> configurator, Action<LeaderConfigurationBuilder<T>> builder) where T : class
         {
             if (configurator == null)
@@ -20,24 +20,36 @@ namespace Topshelf.Leader.HighAvailability
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            var serviceStoppingTokenSource = new CancellationTokenSource();
+            configurator.BeforeStoppingService(() => serviceStoppingTokenSource.Cancel());
+
             configurator.WhenStarted(async service =>
             {
                 var configurationBuilder = new LeaderConfigurationBuilder<T>();
+                configurationBuilder.WhenServiceIsStopping(serviceStoppingTokenSource.Token);
+
                 builder(configurationBuilder);
                 var leaderConfiguration = configurationBuilder.Build();
 
                 await WhenStarted(service, leaderConfiguration);
             });
-            return configurator;
         }
 
-        private static async Task RenewHeartbeat<T>(LeaderConfiguration<T> config, CancellationTokenSource noLongerTheLeader)
+        private static async Task BlockUntilWeAreTheLeader<T>(LeaderConfiguration<T> config)
+        {
+            while (!await config.LockManager.AcquireLock(config.UniqueIdentifier, config.ServiceIsStopping))
+            {
+                await Task.Delay(config.LeaderCheckEvery, config.ServiceIsStopping);
+            }
+        }
+
+        private static async Task RenewLease<T>(LeaderConfiguration<T> config, CancellationTokenSource noLongerTheLeader)
         {
             try
             {
-                while (await config.LockManager.AcquireLock(config.UniqueIdentifier) && !config.ServiceIsStopping.IsCancellationRequested)
+                while (await config.LockManager.RenewLock(config.UniqueIdentifier, config.ServiceIsStopping))
                 {
-                    await TaskExtension.DelayWithoutTimeoutException(config.LeaseUpdateEvery, config.ServiceIsStopping);
+                    await Task.Delay(config.LeaseUpdateEvery, config.ServiceIsStopping);
                 }
             }
             finally
@@ -46,30 +58,24 @@ namespace Topshelf.Leader.HighAvailability
             }
         }
 
-        private static async Task BlockUntilWeAreTheLeader<T>(LeaderConfiguration<T> config)
-        {
-            while (!await config.LockManager.AcquireLock(config.UniqueIdentifier) && !config.ServiceIsStopping.IsCancellationRequested)
-            {
-                await TaskExtension.DelayWithoutTimeoutException(config.LeaderCheckEvery, config.ServiceIsStopping);
-            }
-        }
-
         private static async Task WhenStarted<T>(T service, LeaderConfiguration<T> config)
         {
             while (!config.ServiceIsStopping.IsCancellationRequested)
             {
-                await BlockUntilWeAreTheLeader(config);
-
-                if (config.ServiceIsStopping.IsCancellationRequested)
+                try
+                {
+                    await BlockUntilWeAreTheLeader(config);
+                }
+                catch (TaskCanceledException)
                 {
                     continue;
                 }
 
+                var noLongerTheLeaderTokenSource = new CancellationTokenSource();
                 try
                 {
-                    var noLongerTheLeaderTokenSource = new CancellationTokenSource();
                     await Task.WhenAll(
-                        RenewHeartbeat(config, noLongerTheLeaderTokenSource),
+                        RenewLease(config, noLongerTheLeaderTokenSource),
                         Task.Run(() => config.Startup(service, noLongerTheLeaderTokenSource.Token), config.ServiceIsStopping));
                 }
                 catch (TaskCanceledException)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Topshelf.Leader.HighAvailability;
 
 namespace Topshelf.Leader.ConsoleTest
 {
@@ -20,7 +19,6 @@ namespace Topshelf.Leader.ConsoleTest
                             await service.Start(token);
                         });
                     });
-
                     s.ConstructUsing(name => new TheService());
                     s.WhenStopped(service => service.Stop());
                 });
@@ -37,13 +35,13 @@ namespace Topshelf.Leader.ConsoleTest
             while (!stopToken.IsCancellationRequested)
             {
                 Console.WriteLine("Doing work");
-                await TaskExtension.DelayWithoutTimeoutException(TimeSpan.FromSeconds(10), stopToken);
+                await TaskExtension.DelayWithoutTimeoutException(TimeSpan.FromSeconds(1), stopToken);
             }
         }
 
         public void Stop()
         {
-            
+            Console.WriteLine("Stopping");
         }
     }
 
