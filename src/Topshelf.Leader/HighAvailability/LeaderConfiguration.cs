@@ -1,20 +1,25 @@
 ﻿using System;
+using System.Threading;
 
 namespace Topshelf.Leader.HighAvailability
 {
-    public class LeaderConfiguration
+    public class LeaderConfiguration<T>
     {
-        public LeaderConfiguration(string uniqueIdentifier, ILeaderManager leaderManager, TimeSpan heartBeatEvery, TimeSpan leaderCheckEvery)
+        public LeaderConfiguration(Action<T, CancellationToken> startup, string uniqueIdentifier,
+            IDistributedLockManager lockManager, TimeSpan leaseUpdateEvery, TimeSpan leaderCheckEvery,
+            CancellationToken serviceIsStopping)
         {
-            LeaderManager = leaderManager ?? throw new ArgumentNullException(nameof(leaderManager));
-            if (heartBeatEvery <= TimeSpan.Zero)
+            Startup = startup ?? throw new ArgumentNullException(nameof(startup));
+            LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
+
+            if (leaseUpdateEvery <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(heartBeatEvery), "Must not be less than or equal to zero.");
+                throw new ArgumentOutOfRangeException(nameof(leaseUpdateEvery), "Must not be less than or equal to zero.");
             }
 
             if (leaderCheckEvery <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(heartBeatEvery), "Must not be less than or equal to zero.");
+                throw new ArgumentOutOfRangeException(nameof(leaseUpdateEvery), "Must not be less than or equal to zero.");
             }
 
             if (string.IsNullOrEmpty(uniqueIdentifier))
@@ -23,16 +28,21 @@ namespace Topshelf.Leader.HighAvailability
             }
 
             UniqueIdentifier = uniqueIdentifier;
-            HeartBeatEvery = heartBeatEvery;
+            LeaseUpdateEvery = leaseUpdateEvery;
             LeaderCheckEvery = leaderCheckEvery;
+            ServiceIsStopping = serviceIsStopping;
         }
 
         public string UniqueIdentifier { get; }
 
-        public TimeSpan HeartBeatEvery { get; }
+        public TimeSpan LeaseUpdateEvery { get; }
 
         public TimeSpan LeaderCheckEvery { get; }
 
-        public ILeaderManager LeaderManager { get; }
+        public CancellationToken ServiceIsStopping { get; }
+
+        public Action<T, CancellationToken> Startup { get; }
+
+        public IDistributedLockManager LockManager { get; }
     }
 }
