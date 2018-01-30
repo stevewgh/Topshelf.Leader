@@ -32,14 +32,7 @@ namespace Topshelf.Leader.Tests
         public void start_the_service_when_required()
         {
             var testService = new TestService();
-            var stopRequestedSource = new CancellationTokenSource();
-            var host = BuildTestHost(
-                testService,
-                builder =>
-                {
-                    builder.WhenStarted(async (service, token) => await service.Start(token));
-                    builder.WhenServiceIsStopping(stopRequestedSource);
-                });
+            var host = BuildTestHost(testService);
 
             host.Run();
 
@@ -50,18 +43,22 @@ namespace Topshelf.Leader.Tests
         public void stop_the_service_when_required()
         {
             var testService = new TestService();
-            var stopRequestedSource = new CancellationTokenSource();
-            var host = BuildTestHost(
-                testService,
-                builder =>
-                {
-                    builder.WhenStarted(async (service, token) => await service.Start(token));
-                    builder.WhenServiceIsStopping(stopRequestedSource);
-                });
+            var host = BuildTestHost(testService);
 
             host.Run();
 
             Assert.True(testService.Stopped);
+        }
+
+        private static TestHost BuildTestHost(TestService service)
+        {
+            return BuildTestHost(
+                service,
+                builder =>
+                {
+                    builder.WhenStarted(async (srvc, token) => { await srvc.Start(token); });
+                }
+            );
         }
 
         private static TestHost BuildTestHost(TestService service, Action<LeaderConfigurationBuilder<TestService>> builder)
