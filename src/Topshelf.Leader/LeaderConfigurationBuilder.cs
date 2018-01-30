@@ -15,7 +15,7 @@ namespace Topshelf.Leader
         private TimeSpan timeBetweenCheckingLeaderHealth;
         private string nodeId;
         private ILockManager lockManager;
-        private CancellationToken serviceIsStopping = CancellationToken.None;
+        private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
 
         public LeaderConfigurationBuilder()
@@ -77,7 +77,7 @@ namespace Topshelf.Leader
 
         internal bool ServiceStoppingTokenIsSet { get; private set; }
 
-        internal LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationToken serviceStopping)
+        internal LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationTokenSource serviceStopping)
         {
             serviceIsStopping = serviceStopping;
             ServiceStoppingTokenIsSet = true;

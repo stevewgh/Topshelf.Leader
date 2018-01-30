@@ -12,7 +12,7 @@ namespace Topshelf.Leader
             ILockManager lockManager,
             TimeSpan leaseUpdateEvery,
             TimeSpan leaderCheckEvery,
-            CancellationToken serviceIsStopping, 
+            CancellationTokenSource serviceIsStopping, 
             Action<bool> whenLeaderIsElected)
         {
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
@@ -46,7 +46,7 @@ namespace Topshelf.Leader
 
         public TimeSpan LeaderCheckEvery { get; }
 
-        public CancellationToken ServiceIsStopping { get; }
+        public CancellationTokenSource ServiceIsStopping { get; }
 
         public Action<bool> WhenLeaderIsElected { get; }
 
