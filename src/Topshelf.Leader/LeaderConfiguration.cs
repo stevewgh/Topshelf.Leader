@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
     public class LeaderConfiguration<T>
     {
         public LeaderConfiguration(
-            Action<T, CancellationToken> startup, 
+            Func<T, CancellationToken, Task> startup,
             string nodeId,
-            ILockManager lockManager, 
-            TimeSpan leaseUpdateEvery, 
+            ILockManager lockManager,
+            TimeSpan leaseUpdateEvery,
             TimeSpan leaderCheckEvery,
-            CancellationToken serviceIsStopping)
+            CancellationToken serviceIsStopping, 
+            Action<bool> whenLeaderIsElected)
         {
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
             LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
@@ -35,6 +37,7 @@ namespace Topshelf.Leader
             LeaseUpdateEvery = leaseUpdateEvery;
             LeaderCheckEvery = leaderCheckEvery;
             ServiceIsStopping = serviceIsStopping;
+            WhenLeaderIsElected = whenLeaderIsElected;
         }
 
         public string NodeId { get; }
@@ -45,7 +48,9 @@ namespace Topshelf.Leader
 
         public CancellationToken ServiceIsStopping { get; }
 
-        public Action<T, CancellationToken> Startup { get; }
+        public Action<bool> WhenLeaderIsElected { get; }
+
+        public Func<T, CancellationToken, Task> Startup { get; }
 
         public ILockManager LockManager { get; }
     }

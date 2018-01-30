@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FakeItEasy;
 using Xunit;
 
@@ -17,11 +18,11 @@ namespace Topshelf.Leader.Tests
         public void set_a_unique_nodeid_if_one_isnt_provided()
         {
             var builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             var firstId = builder.Build().NodeId;
 
             builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             var secondId = builder.Build().NodeId;
 
             Assert.NotStrictEqual(firstId, secondId);
@@ -33,7 +34,7 @@ namespace Topshelf.Leader.Tests
             const string nodeid = "testvalue";
 
             var builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             builder.SetNodeId(nodeid);
 
             Assert.Equal(nodeid, builder.Build().NodeId);
@@ -45,7 +46,7 @@ namespace Topshelf.Leader.Tests
             var leaseUpdate = TimeSpan.FromDays(1);
 
             var builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             builder.UpdateLeaseEvery(leaseUpdate);
 
             Assert.Equal(leaseUpdate, builder.Build().LeaseUpdateEvery);
@@ -69,7 +70,7 @@ namespace Topshelf.Leader.Tests
             var healthCheckEvery = TimeSpan.FromDays(1);
 
             var builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             builder.CheckHealthOfLeaderEvery(healthCheckEvery);
 
             Assert.Equal(healthCheckEvery, builder.Build().LeaderCheckEvery);
@@ -93,7 +94,7 @@ namespace Topshelf.Leader.Tests
             var manager = A.Fake<ILockManager>();
 
             var builder = new LeaderConfigurationBuilder<object>();
-            builder.WhenStarted((o, token) => { });
+            builder.WhenStarted((o, token) => Task.CompletedTask);
             builder.WithLockManager(manager);
 
             Assert.Same(manager, builder.Build().LockManager);

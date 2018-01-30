@@ -14,6 +14,19 @@ namespace Topshelf.Leader.ConsoleTest
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
+                        builder.CheckHealthOfLeaderEvery(TimeSpan.FromSeconds(10));
+                        builder.WhenLeaderIsElected(iamLeader =>
+                        {
+                            if (iamLeader)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.BackgroundColor = ConsoleColor.White;
+                            }
+                            Console.WriteLine($"Leader election took place: {iamLeader}");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.BackgroundColor = ConsoleColor.Black;
+                        });
+                        builder.WithLockManager(new FlipFlopLockManager());
                         builder.WhenStarted(async (service, token) =>
                         {
                             await service.Start(token);
@@ -23,8 +36,26 @@ namespace Topshelf.Leader.ConsoleTest
                     s.WhenStopped(service => service.Stop());
                 });
 
-                x.OnException(Console.WriteLine);
+                x.OnException(ex=>
+                {
+                    Console.WriteLine(ex);
+                    Console.ReadLine();
+                });
             });
+            Environment.ExitCode = (int)rc;
+        }
+    }
+
+    public class FlipFlopLockManager : ILockManager
+    {
+        public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        {
+            return DateTime.Now.Second > 30;
+        }
+
+        public async Task<bool> RenewLock(string nodeId, CancellationToken token)
+        {
+            return DateTime.Now.Second > 30;
         }
     }
 
@@ -34,8 +65,8 @@ namespace Topshelf.Leader.ConsoleTest
         {
             while (!stopToken.IsCancellationRequested)
             {
-                Console.WriteLine("Doing work");
-                await TaskExtension.DelayWithoutTimeoutException(TimeSpan.FromSeconds(1), stopToken);
+                Console.WriteLine($"Doing work {DateTime.Now}");
+                await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
             }
         }
 

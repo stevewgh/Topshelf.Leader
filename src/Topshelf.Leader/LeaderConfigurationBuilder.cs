@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Topshelf.Leader.InMemory;
 
 namespace Topshelf.Leader
@@ -9,12 +10,13 @@ namespace Topshelf.Leader
         internal readonly TimeSpan DefaultTimeBetweenLeaseUpdates = TimeSpan.FromSeconds(5);
         internal readonly TimeSpan DefaultTimeBetweenCheckingLeaderHealth = TimeSpan.FromSeconds(60);
 
-        private Action<T, CancellationToken> whenStarted;
+        private Func<T, CancellationToken, Task> whenStarted;
         private TimeSpan timeBetweenLeaseUpdates;
         private TimeSpan timeBetweenCheckingLeaderHealth;
         private string nodeId;
         private ILockManager lockManager;
         private CancellationToken serviceIsStopping = CancellationToken.None;
+        private Action<bool> whenLeaderIsElected;
 
         public LeaderConfigurationBuilder()
         {
@@ -22,6 +24,7 @@ namespace Topshelf.Leader
             timeBetweenCheckingLeaderHealth = DefaultTimeBetweenCheckingLeaderHealth;
             nodeId = Guid.NewGuid().ToString();
             lockManager = new InMemoryLockManager(nodeId);
+            whenLeaderIsElected = b => { };
         }
 
         public LeaderConfigurationBuilder<T> WithLockManager(ILockManager manager)
@@ -30,7 +33,7 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaderConfigurationBuilder<T> WhenStarted(Action<T, CancellationToken> startup)
+        public LeaderConfigurationBuilder<T> WhenStarted(Func<T, CancellationToken, Task> startup)
         {
             whenStarted = startup ?? throw new ArgumentNullException(nameof(startup));
             return this;
@@ -66,6 +69,12 @@ namespace Topshelf.Leader
             return this;
         }
 
+        public LeaderConfigurationBuilder<T> WhenLeaderIsElected(Action<bool> leaderElection)
+        {
+            whenLeaderIsElected = leaderElection ?? throw new ArgumentNullException(nameof(leaderElection));
+            return this;
+        }
+
         internal bool ServiceStoppingTokenIsSet { get; private set; }
 
         internal LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationToken serviceStopping)
@@ -82,7 +91,8 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
             }
 
-            return new LeaderConfiguration<T>(whenStarted, nodeId, lockManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping);
+            return new LeaderConfiguration<T>(whenStarted, nodeId, lockManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping, whenLeaderIsElected);
         }
+
     }
 }

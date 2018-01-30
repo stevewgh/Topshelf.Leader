@@ -21,7 +21,16 @@ namespace Topshelf.Leader
             }
 
             var serviceStoppingTokenSource = new CancellationTokenSource();
-            configurator.BeforeStoppingService(() => serviceStoppingTokenSource.Cancel());
+            configurator.BeforeStoppingService(() =>
+            {
+                try
+                {
+                    serviceStoppingTokenSource.Cancel();
+                }
+                catch (TaskCanceledException)
+                {
+                }
+            });
 
             configurator.WhenStarted(async service =>
             {
@@ -31,7 +40,15 @@ namespace Topshelf.Leader
                 builder(configurationBuilder);
                 var leaderConfiguration = configurationBuilder.Build();
 
-                await WhenStarted(service, leaderConfiguration);
+                try
+                {
+                    await WhenStarted(service, leaderConfiguration);
+                }
+                catch (TaskCanceledException)
+                {
+                    // TaskCanceledException bubbles up if the service stopping cancellation token is set
+                    // so we swallow the exception so that the Topshelf OnException handler doesn't see it
+                }
             });
         }
 
@@ -40,6 +57,11 @@ namespace Topshelf.Leader
             while (!await config.LockManager.AcquireLock(config.NodeId, config.ServiceIsStopping))
             {
                 await Task.Delay(config.LeaderCheckEvery, config.ServiceIsStopping);
+            }
+
+            if (!config.ServiceIsStopping.IsCancellationRequested)
+            {
+                config.WhenLeaderIsElected(true);
             }
         }
 
@@ -52,9 +74,10 @@ namespace Topshelf.Leader
                     await Task.Delay(config.LeaseUpdateEvery, config.ServiceIsStopping);
                 }
             }
-            finally
+            finally 
             {
                 noLongerTheLeader.Cancel();
+                config.WhenLeaderIsElected(false);
             }
         }
 
@@ -65,18 +88,10 @@ namespace Topshelf.Leader
                 try
                 {
                     await BlockUntilWeAreTheLeader(config);
-                }
-                catch (TaskCanceledException)
-                {
-                    continue;
-                }
-
-                var noLongerTheLeaderTokenSource = new CancellationTokenSource();
-                try
-                {
+                    var noLongerTheLeader = new CancellationTokenSource();
                     await Task.WhenAll(
-                        RenewLease(config, noLongerTheLeaderTokenSource),
-                        Task.Run(() => config.Startup(service, noLongerTheLeaderTokenSource.Token), config.ServiceIsStopping));
+                        RenewLease(config, noLongerTheLeader),
+                        config.Startup(service, noLongerTheLeader.Token));
                 }
                 catch (TaskCanceledException)
                 {
