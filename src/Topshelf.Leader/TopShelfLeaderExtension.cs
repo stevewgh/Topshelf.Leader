@@ -37,7 +37,7 @@ namespace Topshelf.Leader
 
         private static async Task BlockUntilWeAreTheLeader<T>(LeaderConfiguration<T> config)
         {
-            while (!await config.LockManager.AcquireLock(config.UniqueIdentifier, config.ServiceIsStopping))
+            while (!await config.LockManager.AcquireLock(config.NodeId, config.ServiceIsStopping))
             {
                 await Task.Delay(config.LeaderCheckEvery, config.ServiceIsStopping);
             }
@@ -47,7 +47,7 @@ namespace Topshelf.Leader
         {
             try
             {
-                while (await config.LockManager.RenewLock(config.UniqueIdentifier, config.ServiceIsStopping))
+                while (await config.LockManager.RenewLock(config.NodeId, config.ServiceIsStopping))
                 {
                     await Task.Delay(config.LeaseUpdateEvery, config.ServiceIsStopping);
                 }

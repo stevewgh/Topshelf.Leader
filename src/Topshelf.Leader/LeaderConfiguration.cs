@@ -7,7 +7,7 @@ namespace Topshelf.Leader
     {
         public LeaderConfiguration(
             Action<T, CancellationToken> startup, 
-            string uniqueIdentifier,
+            string nodeId,
             ILockManager lockManager, 
             TimeSpan leaseUpdateEvery, 
             TimeSpan leaderCheckEvery,
@@ -26,18 +26,18 @@ namespace Topshelf.Leader
                 throw new ArgumentOutOfRangeException(nameof(leaseUpdateEvery), "Must not be less than or equal to zero.");
             }
 
-            if (string.IsNullOrEmpty(uniqueIdentifier))
+            if (string.IsNullOrEmpty(nodeId))
             {
-                throw new ArgumentException("Value cannot be null or empty.", nameof(uniqueIdentifier));
+                throw new ArgumentException("Value cannot be null or empty.", nameof(nodeId));
             }
 
-            UniqueIdentifier = uniqueIdentifier;
+            NodeId = nodeId;
             LeaseUpdateEvery = leaseUpdateEvery;
             LeaderCheckEvery = leaderCheckEvery;
             ServiceIsStopping = serviceIsStopping;
         }
 
-        public string UniqueIdentifier { get; }
+        public string NodeId { get; }
 
         public TimeSpan LeaseUpdateEvery { get; }
 

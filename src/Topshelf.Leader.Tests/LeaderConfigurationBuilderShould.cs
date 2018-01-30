@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using System;
+using FakeItEasy;
+using Xunit;
 
 namespace Topshelf.Leader.Tests
 {
@@ -9,6 +11,92 @@ namespace Topshelf.Leader.Tests
         {
             var builder = new LeaderConfigurationBuilder<object>();
             Assert.Throws<HostConfigurationException>(() => builder.Build());
+        }
+
+        [Fact]
+        public void set_a_unique_nodeid_if_one_isnt_provided()
+        {
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            var firstId = builder.Build().NodeId;
+
+            builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            var secondId = builder.Build().NodeId;
+
+            Assert.NotStrictEqual(firstId, secondId);
+        }
+
+        [Fact]
+        public void use_the_nodeid_that_is_provided()
+        {
+            const string nodeid = "testvalue";
+
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            builder.SetNodeId(nodeid);
+
+            Assert.Equal(nodeid, builder.Build().NodeId);
+        }
+
+        [Fact]
+        public void use_the_lease_renewal_time_that_is_provided()
+        {
+            var leaseUpdate = TimeSpan.FromDays(1);
+
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            builder.UpdateLeaseEvery(leaseUpdate);
+
+            Assert.Equal(leaseUpdate, builder.Build().LeaseUpdateEvery);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void guard_against_invalid_lease_renewal_times(int seconds)
+        {
+            var leaseUpdate = TimeSpan.FromSeconds(seconds);
+
+            var builder = new LeaderConfigurationBuilder<object>();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => builder.UpdateLeaseEvery(leaseUpdate));
+        }
+
+        [Fact]
+        public void use_the_health_check_time_that_is_provided()
+        {
+            var healthCheckEvery = TimeSpan.FromDays(1);
+
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            builder.CheckHealthOfLeaderEvery(healthCheckEvery);
+
+            Assert.Equal(healthCheckEvery, builder.Build().LeaderCheckEvery);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void guard_against_invalid_health_check_times(int seconds)
+        {
+            var healthCheckEvery = TimeSpan.FromSeconds(seconds);
+
+            var builder = new LeaderConfigurationBuilder<object>();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => builder.CheckHealthOfLeaderEvery(healthCheckEvery));
+        }
+
+        [Fact]
+        public void use_the_lock_manager_that_is_provided()
+        {
+            var manager = A.Fake<ILockManager>();
+
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => { });
+            builder.WithLockManager(manager);
+
+            Assert.Same(manager, builder.Build().LockManager);
         }
     }
 }
