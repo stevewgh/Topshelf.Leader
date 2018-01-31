@@ -9,6 +9,13 @@ namespace Topshelf.Leader.Tests
         public bool Started { get; private set; }
         public bool Stopped { get; private set; }
 
+        public async Task StartWithNoLoop(CancellationToken stopToken)
+        {
+            Started = true;
+            Console.WriteLine($"Doing work {DateTime.Now}");
+            await Task.Delay(TimeSpan.FromMilliseconds(100), stopToken);
+        }
+
         public async Task Start(CancellationToken stopToken)
         {
             Started = true;

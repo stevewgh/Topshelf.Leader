@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
-    public interface ILockManager
+    public interface ILeadershipManager
     {
         Task<bool> AcquireLock(string nodeId, CancellationToken token);
 

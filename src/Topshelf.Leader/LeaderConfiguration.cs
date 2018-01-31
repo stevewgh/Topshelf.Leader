@@ -9,14 +9,14 @@ namespace Topshelf.Leader
         public LeaderConfiguration(
             Func<T, CancellationToken, Task> startup,
             string nodeId,
-            ILockManager lockManager,
+            ILeadershipManager leadershipManager,
             TimeSpan leaseUpdateEvery,
             TimeSpan leaderCheckEvery,
             CancellationTokenSource serviceIsStopping, 
             Action<bool> whenLeaderIsElected)
         {
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
-            LockManager = lockManager ?? throw new ArgumentNullException(nameof(lockManager));
+            LeadershipManager = leadershipManager ?? throw new ArgumentNullException(nameof(leadershipManager));
 
             if (leaseUpdateEvery <= TimeSpan.Zero)
             {
@@ -52,6 +52,6 @@ namespace Topshelf.Leader
 
         public Func<T, CancellationToken, Task> Startup { get; }
 
-        public ILockManager LockManager { get; }
+        public ILeadershipManager LeadershipManager { get; }
     }
 }

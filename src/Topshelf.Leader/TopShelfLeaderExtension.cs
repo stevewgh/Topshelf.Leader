@@ -27,7 +27,7 @@ namespace Topshelf.Leader
             if (!configurationBuilder.ServiceStoppingTokenIsSet)
             {
                 var serviceStoppingTokenSource = new CancellationTokenSource();
-                configurationBuilder.WhenServiceIsStopping(serviceStoppingTokenSource);
+                configurationBuilder.WhenStopping(serviceStoppingTokenSource);
             }
 
             var leaderConfiguration = configurationBuilder.Build();
@@ -45,7 +45,7 @@ namespace Topshelf.Leader
             {
                 try
                 {
-                    var worker = new RunLoop<T>(service, leaderConfiguration);
+                    var worker = new Runner<T>(service, leaderConfiguration);
                     await worker.Start();
                 }
                 catch (TaskCanceledException)

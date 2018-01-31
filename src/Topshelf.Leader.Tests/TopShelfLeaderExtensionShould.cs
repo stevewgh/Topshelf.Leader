@@ -20,7 +20,7 @@ namespace Topshelf.Leader.Tests
                 builder =>
                 {
                     builder.WhenStarted(async (service, token) => await service.Start(token));
-                    builder.WhenServiceIsStopping(stopRequestedSource);
+                    builder.WhenStopping(stopRequestedSource);
                 });
 
             host.Run();

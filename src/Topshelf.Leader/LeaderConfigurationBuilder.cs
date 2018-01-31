@@ -14,7 +14,7 @@ namespace Topshelf.Leader
         private TimeSpan timeBetweenLeaseUpdates;
         private TimeSpan timeBetweenCheckingLeaderHealth;
         private string nodeId;
-        private ILockManager lockManager;
+        private ILeadershipManager leadershipManager;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
 
@@ -23,13 +23,14 @@ namespace Topshelf.Leader
             timeBetweenLeaseUpdates = DefaultTimeBetweenLeaseUpdates;
             timeBetweenCheckingLeaderHealth = DefaultTimeBetweenCheckingLeaderHealth;
             nodeId = Guid.NewGuid().ToString();
-            lockManager = new InMemoryLockManager(nodeId);
+            leadershipManager = new InMemoryLeadershipManager(nodeId);
             whenLeaderIsElected = b => { };
+            serviceIsStopping = new CancellationTokenSource();
         }
 
-        public LeaderConfigurationBuilder<T> WithLockManager(ILockManager manager)
+        public LeaderConfigurationBuilder<T> WithLeadershipManager(ILeadershipManager manager)
         {
-            lockManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            leadershipManager = manager ?? throw new ArgumentNullException(nameof(manager));
             return this;
         }
 
@@ -51,7 +52,7 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaderConfigurationBuilder<T> CheckHealthOfLeaderEvery(TimeSpan timeBetweenChecks)
+        public LeaderConfigurationBuilder<T> AttemptToBeTheLeaderEvery(TimeSpan timeBetweenChecks)
         {
             if (timeBetweenChecks <= TimeSpan.Zero)
             {
@@ -77,7 +78,7 @@ namespace Topshelf.Leader
 
         internal bool ServiceStoppingTokenIsSet { get; private set; }
 
-        internal LeaderConfigurationBuilder<T> WhenServiceIsStopping(CancellationTokenSource serviceStopping)
+        internal LeaderConfigurationBuilder<T> WhenStopping(CancellationTokenSource serviceStopping)
         {
             serviceIsStopping = serviceStopping;
             ServiceStoppingTokenIsSet = true;
@@ -91,7 +92,7 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
             }
 
-            return new LeaderConfiguration<T>(whenStarted, nodeId, lockManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping, whenLeaderIsElected);
+            return new LeaderConfiguration<T>(whenStarted, nodeId, leadershipManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping, whenLeaderIsElected);
         }
 
     }

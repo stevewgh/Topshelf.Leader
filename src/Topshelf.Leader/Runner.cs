@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
-    public class RunLoop<T>
+    public class Runner<T>
     {
         private readonly T service;
         private readonly LeaderConfiguration<T> config;
 
-        public RunLoop(T service, LeaderConfiguration<T> config)
+        public Runner(T service, LeaderConfiguration<T> config)
         {
             this.service = service;
             this.config = config ?? throw new ArgumentNullException(nameof(config));
@@ -34,7 +34,7 @@ namespace Topshelf.Leader
         private async Task BlockUntilWeAreTheLeader()
         {
             var token = config.ServiceIsStopping.Token;
-            while (!await config.LockManager.AcquireLock(config.NodeId, token))
+            while (!await config.LeadershipManager.AcquireLock(config.NodeId, token))
             {
                 await Task.Delay(config.LeaderCheckEvery, token);
             }
@@ -47,7 +47,7 @@ namespace Topshelf.Leader
             try
             {
                 var token = config.ServiceIsStopping.Token;
-                while (await config.LockManager.RenewLock(config.NodeId, token))
+                while (await config.LeadershipManager.RenewLock(config.NodeId, token))
                 {
                     await Task.Delay(config.LeaseUpdateEvery, token);
                 }

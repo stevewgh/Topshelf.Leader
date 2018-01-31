@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader.InMemory
 {
-    public class InMemoryLockManager : ILockManager
+    public class InMemoryLeadershipManager : ILeadershipManager
     {
         private readonly string owningNodeId;
 
-        public InMemoryLockManager(string owningNodeId)
+        public InMemoryLeadershipManager(string owningNodeId)
         {
             this.owningNodeId = owningNodeId;
         }

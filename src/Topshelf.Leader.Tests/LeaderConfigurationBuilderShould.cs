@@ -71,7 +71,7 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.CheckHealthOfLeaderEvery(healthCheckEvery);
+            builder.AttemptToBeTheLeaderEvery(healthCheckEvery);
 
             Assert.Equal(healthCheckEvery, builder.Build().LeaderCheckEvery);
         }
@@ -85,19 +85,19 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => builder.CheckHealthOfLeaderEvery(healthCheckEvery));
+            Assert.Throws<ArgumentOutOfRangeException>(() => builder.AttemptToBeTheLeaderEvery(healthCheckEvery));
         }
 
         [Fact]
         public void use_the_lock_manager_that_is_provided()
         {
-            var manager = A.Fake<ILockManager>();
+            var manager = A.Fake<ILeadershipManager>();
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.WithLockManager(manager);
+            builder.WithLeadershipManager(manager);
 
-            Assert.Same(manager, builder.Build().LockManager);
+            Assert.Same(manager, builder.Build().LeadershipManager);
         }
     }
 }

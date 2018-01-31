@@ -14,7 +14,7 @@ namespace Topshelf.Leader.ConsoleTest
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
-                        builder.CheckHealthOfLeaderEvery(TimeSpan.FromSeconds(10));
+                        builder.AttemptToBeTheLeaderEvery(TimeSpan.FromSeconds(10));
                         builder.WhenLeaderIsElected(iamLeader =>
                         {
                             if (iamLeader)
@@ -26,7 +26,7 @@ namespace Topshelf.Leader.ConsoleTest
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.BackgroundColor = ConsoleColor.Black;
                         });
-                        builder.WithLockManager(new FlipFlopLockManager());
+                        builder.WithLeadershipManager(new FlipFlopLeadershipManager());
                         builder.WhenStarted(async (service, token) =>
                         {
                             await service.Start(token);
@@ -46,7 +46,7 @@ namespace Topshelf.Leader.ConsoleTest
         }
     }
 
-    public class FlipFlopLockManager : ILockManager
+    public class FlipFlopLeadershipManager : ILeadershipManager
     {
         public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
         {
