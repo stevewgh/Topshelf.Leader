@@ -5,12 +5,18 @@ namespace Topshelf.Leader.InMemory
 {
     public class InMemoryLeadershipManager : ILeadershipManager
     {
-        private readonly string owningNodeId;
+        private string owningNodeId;
 
         public InMemoryLeadershipManager(string owningNodeId)
         {
             this.owningNodeId = owningNodeId;
         }
+
+        public void AssignLeader(string newLeaderId)
+        {
+            this.owningNodeId = newLeaderId;
+        }
+
         public Task<bool> AcquireLock(string nodeId, CancellationToken token)
         {
             return Task.FromResult(nodeId == owningNodeId);

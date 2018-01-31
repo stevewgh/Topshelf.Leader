@@ -22,7 +22,15 @@ namespace Topshelf.Leader.Tests
             while (!stopToken.IsCancellationRequested)
             {
                 Console.WriteLine($"Doing work {DateTime.Now}");
-                await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    Started = false;
+                    throw;
+                }
             }
         }
 

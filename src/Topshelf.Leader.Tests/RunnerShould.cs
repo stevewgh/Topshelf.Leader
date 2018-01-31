@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Topshelf.Leader.Tests
 {
-    public class RunLoopShould
+    public class RunnerShould
     {
         [Fact]
         public async Task stop_running_when_the_service_is_stopping()
