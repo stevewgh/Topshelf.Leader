@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageTags>Topshelf Leader election</PackageTags>
+    <Description>Leader election extensions to Topshelf to enable a service to start only when it is the leader. Useful for high availablility scenarios where active / passive with automatic switching is required.</Description>
+    <PackageProjectUrl>https://github.com/stevewgh/Topshelf.Leader</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/stevewgh/Topshelf.Leader/master/LICENSE</PackageLicenseUrl>
+    <Copyright />
+    <RepositoryUrl>https://github.com/stevewgh/Topshelf.Leader.git</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
