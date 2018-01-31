@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Topshelf.Leader\Topshelf.Leader.csproj">
-      <Project>{0c2ecdd8-200c-4352-8957-b7e3a3dbddcd}</Project>
+      <Project>{a2602a86-9012-4557-91fc-c7e76552e4cf}</Project>
       <Name>Topshelf.Leader</Name>
     </ProjectReference>
   </ItemGroup>

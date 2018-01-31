@@ -48,14 +48,14 @@ namespace Topshelf.Leader.ConsoleTest
 
     public class FlipFlopLeadershipManager : ILeadershipManager
     {
-        public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        public Task<bool> AcquireLock(string nodeId, CancellationToken token)
         {
-            return DateTime.Now.Second > 30;
+            return Task.FromResult(DateTime.Now.Second > 30);
         }
 
-        public async Task<bool> RenewLock(string nodeId, CancellationToken token)
+        public Task<bool> RenewLock(string nodeId, CancellationToken token)
         {
-            return DateTime.Now.Second > 30;
+            return Task.FromResult(DateTime.Now.Second > 30);
         }
     }
 
