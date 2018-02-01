@@ -2,6 +2,9 @@
 
 An extension method to the Topshelf `ServiceConfigurator<T>` class that adds Leader checking to the service startup.
 
+## When would I use this?
+Use it when your services require active / passive or any form of high availablility.
+
 ## Getting started
 ```
 Install-Package Topshelf.Leader
