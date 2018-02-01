@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("Topshelf.Leader.Tests")]
-[assembly: AssemblyInformationalVersion("0.0.1-beta")]
+[assembly: AssemblyInformationalVersion("1.0.0")]

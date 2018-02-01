@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
+using Topshelf.Leader.Tests.Services;
 using Xunit;
 
 namespace Topshelf.Leader.Tests
@@ -11,14 +12,14 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public async Task stop_running_when_the_service_is_stopping()
         {
-            var service = new TestService();
+            var service = new TestServicewithStopSupport();
             var stopping = new CancellationTokenSource();
-            var config = new LeaderConfigurationBuilder<TestService>()
+            var config = new LeaderConfigurationBuilder<TestServicewithStopSupport>()
                 .WhenStopping(stopping)
                 .WhenStarted(async (testService, token) => await testService.Start(token))
                 .Build();
 
-            var runner = new Runner<TestService>(service, config);
+            var runner = new Runner<TestServicewithStopSupport>(service, config);
             var startTask = runner.Start();
 
             stopping.Cancel();
