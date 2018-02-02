@@ -3,7 +3,13 @@
 An extension method to the Topshelf `ServiceConfigurator<T>` class that adds Leader checking to the service startup.
 
 ## When would I use this?
-Use it when your services require active / passive or any form of high availablility.
+Use it when your services require active / passive or any form of high availablility where the services aren't able to naturally compete. 
+
+* Catch up suscriptions that don't allow competing consumers
+* Services that can operate in an Active / Passive configuration
+
+## When should I not use this?
+Don't use this extension if you want a non-leader service to perform tasks whilst the leader service is also performing tasks. The design of the extension is that only one service is actively doing anything at any one time.
 
 ## Getting started
 ```
