@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Topshelf.Leader.ConsoleTest
 {
@@ -10,11 +8,14 @@ namespace Topshelf.Leader.ConsoleTest
         {
             var rc = HostFactory.Run(x =>
             {
-                x.Service<TheService>(s =>
+                var svc = new BadService();
+                var leadershipManager = new BadLeadershipManager(5);
+
+                x.Service<BadService>(s =>
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
-                        builder.AttemptToBeTheLeaderEvery(TimeSpan.FromSeconds(10));
+                        builder.AttemptToBeTheLeaderEvery(TimeSpan.FromSeconds(2));
                         builder.WhenLeaderIsElected(iamLeader =>
                         {
                             if (iamLeader)
@@ -26,13 +27,13 @@ namespace Topshelf.Leader.ConsoleTest
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.BackgroundColor = ConsoleColor.Black;
                         });
-                        builder.WithLeadershipManager(new FlipFlopLeadershipManager());
+                        builder.WithLeadershipManager(leadershipManager);
                         builder.WhenStarted(async (service, token) =>
                         {
                             await service.Start(token);
                         });
                     });
-                    s.ConstructUsing(name => new TheService());
+                    s.ConstructUsing(name => svc);
                     s.WhenStopped(service => service.Stop());
                 });
 
@@ -45,35 +46,4 @@ namespace Topshelf.Leader.ConsoleTest
             Environment.ExitCode = (int)rc;
         }
     }
-
-    public class FlipFlopLeadershipManager : ILeadershipManager
-    {
-        public Task<bool> AcquireLock(string nodeId, CancellationToken token)
-        {
-            return Task.FromResult(DateTime.Now.Second > 30);
-        }
-
-        public Task<bool> RenewLock(string nodeId, CancellationToken token)
-        {
-            return Task.FromResult(DateTime.Now.Second > 30);
-        }
-    }
-
-    public class TheService
-    {
-        public async Task Start(CancellationToken stopToken)
-        {
-            while (!stopToken.IsCancellationRequested)
-            {
-                Console.WriteLine($"Doing work {DateTime.Now}");
-                await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
-            }
-        }
-
-        public void Stop()
-        {
-            Console.WriteLine("Stopping");
-        }
-    }
-
 }
