@@ -18,6 +18,6 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="Topshelf.Leader.dll" target="lib\Topshelf.Leader.dll" />
+        <file src="Topshelf.Leader.dll" target="lib\net452\Topshelf.Leader.dll" />
     </files>
 </package>
