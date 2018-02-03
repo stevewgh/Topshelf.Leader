@@ -62,6 +62,9 @@
     <PackageReference Include="xunit">
       <Version>2.3.1</Version>
     </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <Version>2.3.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Topshelf.Leader\Topshelf.Leader.csproj">
