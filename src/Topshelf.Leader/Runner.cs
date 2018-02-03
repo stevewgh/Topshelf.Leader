@@ -34,7 +34,7 @@ namespace Topshelf.Leader
                 var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(config.ServiceIsStopping.Token, noLongerTheLeader.Token);
                 try
                 {
-                    var leaseTask = RenewLease(noLongerTheLeader);
+                    var leaseTask = RenewLease(linkedTokenSource.Token, noLongerTheLeader);
                     var startupTask = config.Startup(service, linkedTokenSource.Token);
                     var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
 
@@ -66,6 +66,10 @@ namespace Topshelf.Leader
                 catch (TaskCanceledException)
                 {
                 }
+                finally
+                {
+                    linkedTokenSource.Cancel();
+                }
             }
         }
 
@@ -80,14 +84,13 @@ namespace Topshelf.Leader
             config.WhenLeaderIsElected(true);
         }
 
-        private async Task RenewLease(CancellationTokenSource noLongerTheLeader)
+        private async Task RenewLease(CancellationToken stopRenewing, CancellationTokenSource noLongerTheLeader)
         {
             try
             {
-                var token = config.ServiceIsStopping.Token;
-                while (await config.LeadershipManager.RenewLock(config.NodeId, token))
+                while (await config.LeadershipManager.RenewLock(config.NodeId, stopRenewing))
                 {
-                    await Task.Delay(config.LeaseUpdateEvery, token);
+                    await Task.Delay(config.LeaseUpdateEvery, stopRenewing);
                 }
             }
             finally 
