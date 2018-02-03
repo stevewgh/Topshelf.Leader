@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
@@ -170,6 +171,50 @@ namespace Topshelf.Leader.Tests
         }
 
         [Fact]
+        public async Task should_bubble_exceptions_in_the_leadershipmanager()
+        {
+            var exception = new Exception();
+            var service = BuildBlockingTestService();
+            var manager = A.Fake<ILeadershipManager>();
+            A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(exception);
+
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .WithLeadershipManager(manager)
+                .Build();
+
+            var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
+            Assert.Same(exception, thrownException.InnerExceptions.First());
+        }
+
+        [Fact]
+        public async Task should_bubble_exceptions_if_the_service_and_leadershipmanager_throw_exceptions()
+        {
+            var serviceException = new Exception("Service stopped working");
+            var leadershipManagerException = new Exception("Leadership manager stopped working");
+            var service = BuildBadTestService(serviceException);
+            var manager = A.Fake<ILeadershipManager>();
+            A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(leadershipManagerException);
+
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .WithLeadershipManager(manager)
+                .Build();
+
+            var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
+            Assert.Contains(serviceException, thrownException.InnerExceptions);
+            Assert.Contains(leadershipManagerException, thrownException.InnerExceptions);
+        }
+
+        [Fact]
         public async Task should_set_the_cancellation_token_when_unhandled_exceptions_occur_in_the_service()
         {
             var exception = new Exception();
@@ -187,7 +232,7 @@ namespace Topshelf.Leader.Tests
                 .WithLeadershipManager(manager)
                 .Build();
 
-            await Assert.ThrowsAnyAsync<Exception>(async () => await new Runner<ITestService>(service, config).Start());
+            await Assert.ThrowsAnyAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
             Assert.True(serviceStopping.IsCancellationRequested);
         }
 

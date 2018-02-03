@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,11 +38,29 @@ namespace Topshelf.Leader
                     var startupTask = config.Startup(service, linkedTokenSource.Token);
                     var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
 
+                    var exceptions = new List<Exception>();
                     if (startupTask.IsFaulted)
                     {
                         config.ServiceIsStopping.Cancel();
-                        await startupTask;
+                        if (startupTask.Exception != null)
+                        {
+                            exceptions.Add(startupTask.Exception.GetBaseException());
+                        }
                     }
+
+                    if (leaseTask.IsFaulted)
+                    {
+                        if (leaseTask.Exception != null)
+                        {
+                            exceptions.Add(leaseTask.Exception.GetBaseException());
+                        }
+                    }
+
+                    if (exceptions.Any())
+                    {
+                        throw new AggregateException(exceptions);
+                    }
+
                     await whenAnyTask;
                 }
                 catch (TaskCanceledException)
