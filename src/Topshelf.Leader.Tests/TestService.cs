@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader.Tests
 {
-    public class TestService
+    public class TestService : ITestService
     {
         public bool Started { get; private set; }
         public bool Stopped { get; private set; }

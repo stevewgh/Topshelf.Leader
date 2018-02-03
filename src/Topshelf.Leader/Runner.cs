@@ -22,12 +22,28 @@ namespace Topshelf.Leader
                 try
                 {
                     await BlockUntilWeAreTheLeader();
-                    var noLongerTheLeader = new CancellationTokenSource();
-                    await Task.WhenAll(
-                        RenewLease(noLongerTheLeader),
-                        config.Startup(service, noLongerTheLeader.Token));
                 }
-                catch (TaskCanceledException) { }
+                catch (TaskCanceledException)
+                {
+                    continue;
+                }
+
+                var noLongerTheLeader = new CancellationTokenSource();
+                try
+                {
+                    var leaseTask = RenewLease(noLongerTheLeader);
+                    var startupTask = config.Startup(service, noLongerTheLeader.Token);
+                    var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
+
+                    if (startupTask.IsFaulted)
+                    {
+                        await startupTask;
+                    }
+                    await whenAnyTask;
+                }
+                catch (TaskCanceledException)
+                {
+                }
             }
         }
 
