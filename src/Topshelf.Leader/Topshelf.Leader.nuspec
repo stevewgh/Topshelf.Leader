@@ -1,20 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
-  <metadata>
-    <id>Topshelf.Leader</id>
-    <version>$version$</version>
-    <title>Topshelf Leader</title>
-    <authors>Steven Ward</authors>
-    <owners>Steven Ward</owners>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.githubusercontent.com/stevewgh/Topshelf.Leader/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/stevewgh/Topshelf.Leader</projectUrl>
-    <description>Extension methods to add leader election startup control to Topshelf.</description>
-    <releaseNotes></releaseNotes>
-    <copyright>Copyright 2018</copyright>
-    <tags>Topshelf Leader Election</tags>
-    <dependencies>
-      <dependency id="Topshelf" version="4.0.0" />
-    </dependencies>
-  </metadata>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Topshelf.Leader</id>
+        <version>1.0.0.0</version>
+        <title>Topshelf Leader</title>
+        <authors>Steven Ward</authors>
+        <owners>Steven Ward</owners>
+        <licenseUrl>https://raw.githubusercontent.com/stevewgh/Topshelf.Leader/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/stevewgh/Topshelf.Leader</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Extension methods to add leader election startup control to Topshelf.</description>
+        <releaseNotes />
+        <copyright>Copyright 2018</copyright>
+        <tags>Topshelf Leader Election</tags>
+        <dependencies>
+            <dependency id="Topshelf" version="4.0.0" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="Topshelf.Leader.dll" target="lib\net452\Topshelf.Leader.dll" />
+    </files>
 </package>

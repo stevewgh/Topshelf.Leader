@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,12 +24,48 @@ namespace Topshelf.Leader
                 try
                 {
                     await BlockUntilWeAreTheLeader();
-                    var noLongerTheLeader = new CancellationTokenSource();
-                    await Task.WhenAll(
-                        RenewLease(noLongerTheLeader),
-                        config.Startup(service, noLongerTheLeader.Token));
                 }
-                catch (TaskCanceledException) { }
+                catch (TaskCanceledException)
+                {
+                    continue;
+                }
+
+                var noLongerTheLeader = new CancellationTokenSource();
+                var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(config.ServiceIsStopping.Token, noLongerTheLeader.Token);
+                try
+                {
+                    var leaseTask = RenewLease(noLongerTheLeader);
+                    var startupTask = config.Startup(service, linkedTokenSource.Token);
+                    var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
+
+                    var exceptions = new List<Exception>();
+                    if (startupTask.IsFaulted)
+                    {
+                        config.ServiceIsStopping.Cancel();
+                        if (startupTask.Exception != null)
+                        {
+                            exceptions.Add(startupTask.Exception.GetBaseException());
+                        }
+                    }
+
+                    if (leaseTask.IsFaulted)
+                    {
+                        if (leaseTask.Exception != null)
+                        {
+                            exceptions.Add(leaseTask.Exception.GetBaseException());
+                        }
+                    }
+
+                    if (exceptions.Any())
+                    {
+                        throw new AggregateException(exceptions);
+                    }
+
+                    await whenAnyTask;
+                }
+                catch (TaskCanceledException)
+                {
+                }
             }
         }
 
