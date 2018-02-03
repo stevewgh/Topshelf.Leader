@@ -2,12 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Topshelf.Leader.Tests
+namespace Topshelf.Leader.Tests.Services
 {
-    public class TestService : ITestService
+    public class TestService
     {
         public bool Started { get; private set; }
-        public bool Stopped { get; private set; }
 
         public async Task StartWithNoLoop(CancellationToken stopToken)
         {
@@ -22,14 +21,16 @@ namespace Topshelf.Leader.Tests
             while (!stopToken.IsCancellationRequested)
             {
                 Console.WriteLine($"Doing work {DateTime.Now}");
-                await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), stopToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    Started = false;
+                    throw;
+                }
             }
-        }
-
-        public void Stop()
-        {
-            Stopped = true;
-            Console.WriteLine("Stopping");
         }
     }
 }

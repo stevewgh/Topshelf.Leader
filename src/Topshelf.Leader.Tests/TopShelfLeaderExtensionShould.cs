@@ -2,6 +2,7 @@
 using System.Threading;
 using Topshelf.HostConfigurators;
 using Topshelf.Hosts;
+using Topshelf.Leader.Tests.Services;
 using Topshelf.Runtime.Windows;
 using Topshelf.ServiceConfigurators;
 using Xunit;
@@ -13,7 +14,7 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void hook_into_the_before_shutdown_to_stop_the_runloop()
         {
-            var testService = new TestService();
+            var testService = new TestServicewithStopSupport();
             var stopRequestedSource = new CancellationTokenSource();
             var host = BuildTestHost(
                 testService,
@@ -31,7 +32,7 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void start_the_service_when_required()
         {
-            var testService = new TestService();
+            var testService = new TestServicewithStopSupport();
             var host = BuildTestHost(testService);
 
             host.Run();
@@ -42,7 +43,7 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void stop_the_service_when_required()
         {
-            var testService = new TestService();
+            var testService = new TestServicewithStopSupport();
             var host = BuildTestHost(testService);
 
             host.Run();
@@ -50,10 +51,10 @@ namespace Topshelf.Leader.Tests
             Assert.True(testService.Stopped);
         }
 
-        private static TestHost BuildTestHost(TestService service)
+        private static TestHost BuildTestHost(TestServicewithStopSupport servicewithStopSupport)
         {
             return BuildTestHost(
-                service,
+                servicewithStopSupport,
                 builder =>
                 {
                     builder.WhenStarted(async (srvc, token) => { await srvc.Start(token); });
@@ -61,10 +62,10 @@ namespace Topshelf.Leader.Tests
             );
         }
 
-        private static TestHost BuildTestHost(TestService service, Action<LeaderConfigurationBuilder<TestService>> builder)
+        private static TestHost BuildTestHost(TestServicewithStopSupport servicewithStopSupport, Action<LeaderConfigurationBuilder<TestServicewithStopSupport>> builder)
         {
-            var serviceConfigurator = new DelegateServiceConfigurator<TestService>();
-            serviceConfigurator.ConstructUsing(() => service);
+            var serviceConfigurator = new DelegateServiceConfigurator<TestServicewithStopSupport>();
+            serviceConfigurator.ConstructUsing(() => servicewithStopSupport);
             serviceConfigurator.WhenStartedAsLeader(builder);
             serviceConfigurator.WhenStopped((testService, control) =>
             {
