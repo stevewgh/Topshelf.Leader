@@ -29,14 +29,16 @@ namespace Topshelf.Leader
                 }
 
                 var noLongerTheLeader = new CancellationTokenSource();
+                var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(config.ServiceIsStopping.Token, noLongerTheLeader.Token);
                 try
                 {
                     var leaseTask = RenewLease(noLongerTheLeader);
-                    var startupTask = config.Startup(service, noLongerTheLeader.Token);
+                    var startupTask = config.Startup(service, linkedTokenSource.Token);
                     var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
 
                     if (startupTask.IsFaulted)
                     {
+                        config.ServiceIsStopping.Cancel();
                         await startupTask;
                     }
                     await whenAnyTask;

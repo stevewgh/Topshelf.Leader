@@ -39,7 +39,7 @@ namespace Topshelf.Leader.Tests
                 .AttemptToBeTheLeaderEvery(TimeSpan.FromMilliseconds(100))
                 .WhenStarted(async (svc, token) =>
                 {
-                    await service.Start(token);
+                    await svc.Start(token);
                 })
                 .WithLeadershipManager(manager)
                 .Build();
@@ -60,31 +60,21 @@ namespace Topshelf.Leader.Tests
             A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
             A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
-            var config = new LeaderConfigurationBuilder<object>()
+            var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
                 .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
-                    await service.Start(token);
+                    await svc.Start(token);
                 })
                 .WithLeadershipManager(manager)
                 .Build();
 
-            var runner = new Runner<object>(new object(), config);
+            var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
 
             A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
-        }
-
-        private static ITestService BuildBlockingTestService()
-        {
-            var service = A.Fake<ITestService>();
-            CancellationToken noLongerLeaderCancellationToken;
-            A.CallTo(() => service.Start(A<CancellationToken>.Ignored))
-                .Invokes(call => noLongerLeaderCancellationToken = call.Arguments.Get<CancellationToken>(0))
-                .Returns(Task.Delay(10000, noLongerLeaderCancellationToken));
-            return service;
         }
 
         [Fact]
@@ -95,17 +85,17 @@ namespace Topshelf.Leader.Tests
             A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
             A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
-            var config = new LeaderConfigurationBuilder<object>()
+            var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
                 .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
-                    await service.Start(token);
+                    await svc.Start(token);
                 })
                 .WithLeadershipManager(manager)
                 .Build();
 
-            var runner = new Runner<object>(new object(), config);
+            var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
             A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
@@ -119,17 +109,17 @@ namespace Topshelf.Leader.Tests
             A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
             A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(false));
 
-            var config = new LeaderConfigurationBuilder<object>()
+            var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
                 .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
-                    await service.Start(token);
+                    await svc.Start(token);
                 })
                 .WithLeadershipManager(manager)
                 .Build();
 
-            var runner = new Runner<object>(new object(), config);
+            var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
             A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
@@ -138,7 +128,84 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public async Task should_attempt_to_renew_a_lease_once_it_has_obtained_one()
         {
+            var service = BuildBlockingTestService();
+            var manager = A.Fake<ILeadershipManager>();
+            A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStopping(new CancellationTokenSource(1000))
+                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .WithLeadershipManager(manager)
+                .Build();
+
+            var runner = new Runner<ITestService>(service, config);
+
+            await runner.Start();
+            A.CallTo(() => manager.RenewLock(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
+        }
+
+        [Fact]
+        public async Task should_bubble_exceptions_in_the_service()
+        {
+            var exception = new Exception();
+            var service = BuildBadTestService(exception);
+            var manager = A.Fake<ILeadershipManager>();
+            A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .WithLeadershipManager(manager)
+                .Build();
+
+            var thrownException = await Assert.ThrowsAsync<Exception>(async () => await new Runner<ITestService>(service, config).Start());
+            Assert.Same(exception, thrownException);
+        }
+
+        [Fact]
+        public async Task should_set_the_cancellation_token_when_unhandled_exceptions_occur_in_the_service()
+        {
+            var exception = new Exception();
+            var service = BuildBadTestService(exception);
+            var manager = A.Fake<ILeadershipManager>();
+            A.CallTo(() => manager.AcquireLock(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+
+            var serviceStopping = new CancellationTokenSource();
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStopping(serviceStopping)
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .WithLeadershipManager(manager)
+                .Build();
+
+            await Assert.ThrowsAnyAsync<Exception>(async () => await new Runner<ITestService>(service, config).Start());
+            Assert.True(serviceStopping.IsCancellationRequested);
+        }
+
+        private static ITestService BuildBlockingTestService()
+        {
+            var service = A.Fake<ITestService>();
+            CancellationToken noLongerLeaderCancellationToken;
+            A.CallTo(() => service.Start(A<CancellationToken>.Ignored))
+                .Invokes(call => noLongerLeaderCancellationToken = call.Arguments.Get<CancellationToken>(0))
+                .Returns(Task.Delay(10000, noLongerLeaderCancellationToken));
+            return service;
+        }
+
+        private static ITestService BuildBadTestService(Exception exception)
+        {
+            var service = A.Fake<ITestService>();
+            A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).ThrowsAsync(exception);
+            return service;
         }
     }
 }
