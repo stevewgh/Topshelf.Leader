@@ -30,45 +30,49 @@ namespace Topshelf.Leader
                     continue;
                 }
 
-                var noLongerTheLeader = new CancellationTokenSource();
-                var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(config.ServiceIsStopping.Token, noLongerTheLeader.Token);
-                try
+                using (var noLongerTheLeader = new CancellationTokenSource())
                 {
-                    var leaseTask = RenewLease(linkedTokenSource.Token, noLongerTheLeader);
-                    var startupTask = config.Startup(service, linkedTokenSource.Token);
-                    var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
-
-                    var exceptions = new List<Exception>();
-                    if (startupTask.IsFaulted)
+                    using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(config.ServiceIsStopping.Token, noLongerTheLeader.Token))
                     {
-                        config.ServiceIsStopping.Cancel();
-                        if (startupTask.Exception != null)
+                        try
                         {
-                            exceptions.Add(startupTask.Exception.GetBaseException());
+                            var leaseTask = RenewLease(linkedTokenSource.Token, noLongerTheLeader);
+                            var startupTask = config.Startup(service, linkedTokenSource.Token);
+                            var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
+
+                            var exceptions = new List<Exception>();
+                            if (startupTask.IsFaulted)
+                            {
+                                config.ServiceIsStopping.Cancel();
+                                if (startupTask.Exception != null)
+                                {
+                                    exceptions.Add(startupTask.Exception.GetBaseException());
+                                }
+                            }
+
+                            if (leaseTask.IsFaulted)
+                            {
+                                if (leaseTask.Exception != null)
+                                {
+                                    exceptions.Add(leaseTask.Exception.GetBaseException());
+                                }
+                            }
+
+                            if (exceptions.Any())
+                            {
+                                throw new AggregateException(exceptions);
+                            }
+
+                            await whenAnyTask;
+                        }
+                        catch (TaskCanceledException)
+                        {
+                        }
+                        finally
+                        {
+                            linkedTokenSource.Cancel();
                         }
                     }
-
-                    if (leaseTask.IsFaulted)
-                    {
-                        if (leaseTask.Exception != null)
-                        {
-                            exceptions.Add(leaseTask.Exception.GetBaseException());
-                        }
-                    }
-
-                    if (exceptions.Any())
-                    {
-                        throw new AggregateException(exceptions);
-                    }
-
-                    await whenAnyTask;
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                finally
-                {
-                    linkedTokenSource.Cancel();
                 }
             }
         }

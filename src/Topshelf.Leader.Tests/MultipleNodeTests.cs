@@ -20,8 +20,11 @@ namespace Topshelf.Leader.Tests
             BuildSubject(node2, manager, out var service2, out var node2Runner);
 
             //  start the runners async
+#pragma warning disable 4014
             node1Runner.Start();
             node2Runner.Start();
+#pragma warning restore 4014
+
             await Task.Delay(500);
 
             Assert.True(service1.Started);
@@ -45,8 +48,11 @@ namespace Topshelf.Leader.Tests
             BuildSubject(node2, manager, b => { if (!node2Elected) node2Elected = b; }, out var _, out var node2Runner);
 
             //  start the runners async
+#pragma warning disable 4014
             node1Runner.Start();
             node2Runner.Start();
+#pragma warning restore 4014
+
             await Task.Delay(500);
 
             manager.AssignLeader(node2);
