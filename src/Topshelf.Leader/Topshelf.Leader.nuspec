@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>Topshelf.Leader</id>
-        <version>1.0.0.0</version>
+        <version>$version$</version>
         <title>Topshelf Leader</title>
         <authors>Steven Ward</authors>
         <owners>Steven Ward</owners>
@@ -14,10 +14,12 @@
         <copyright>Copyright 2018</copyright>
         <tags>Topshelf Leader Election</tags>
         <dependencies>
-            <dependency id="Topshelf" version="4.0.0" />
+            <group>
+                <dependency id="Topshelf" version="4.0.3" />
+            </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="Topshelf.Leader.dll" target="lib\net452\Topshelf.Leader.dll" />
+        <file src="bin\$configuration$\Topshelf.Leader.dll" target="lib\net452\Topshelf.Leader.dll" />
     </files>
 </package>
