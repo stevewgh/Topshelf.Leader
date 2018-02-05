@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader.ConsoleTest
 {
-    public class FlipFlopLeadershipManager : ILeadershipManager
+    public class FlipFlopLeaseManager : ILeaseManager
     {
         private bool weAreTheLeader;
         private readonly int secondsInEachState;
         private readonly Stopwatch timeThatWeHaveBeenLeader = new Stopwatch();
         private readonly Stopwatch timeThatWeHaveNotBeenLeader = new Stopwatch();
 
-        public FlipFlopLeadershipManager(bool weAreTheLeader, int secondsInEachState)
+        public FlipFlopLeaseManager(bool weAreTheLeader, int secondsInEachState)
         {
             this.weAreTheLeader = weAreTheLeader;
             this.secondsInEachState = secondsInEachState;
@@ -26,14 +26,14 @@ namespace Topshelf.Leader.ConsoleTest
             }
         }
 
-        public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        public async Task<bool> AcquireLease(string nodeId, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
             await Task.Delay(500, token);
             return weAreTheLeader;
         }
 
-        public async Task<bool> RenewLock(string nodeId, CancellationToken token)
+        public async Task<bool> RenewLease(string nodeId, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
 
@@ -41,7 +41,7 @@ namespace Topshelf.Leader.ConsoleTest
             return weAreTheLeader;
         }
 
-        public Task ReleaseLock(string nodeId)
+        public Task ReleaseLease(string nodeId)
         {
             if (weAreTheLeader)
             {

@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topshelf.Leader.ConsoleTest", "Topshelf.Leader.ConsoleTest\Topshelf.Leader.ConsoleTest.csproj", "{FC81746A-D208-46FA-B0F8-0E5DBA081424}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topshelf.Leader.Tests", "Topshelf.Leader.Tests\Topshelf.Leader.Tests.csproj", "{8F278D1A-6705-4CDA-9EAE-8BF83813DB85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topshelf.Leader", "Topshelf.Leader\Topshelf.Leader.csproj", "{A2602A86-9012-4557-91FC-C7E76552E4CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{111EC686-A22B-4926-8F30-5AAFBE2F7C4B}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

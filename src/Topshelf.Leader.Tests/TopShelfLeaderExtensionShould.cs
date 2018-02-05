@@ -34,7 +34,7 @@ namespace Topshelf.Leader.Tests
         public void release_the_lease_when_the_service_is_shutting_down()
         {
             const string nodeId = "theNodeId";
-            var manager = A.Fake<ILeadershipManager>();
+            var manager = A.Fake<ILeaseManager>();
             var testService = new TestServicewithStopSupport();
             var stopRequestedSource = new CancellationTokenSource();
             var host = BuildTestHost(
@@ -44,12 +44,12 @@ namespace Topshelf.Leader.Tests
                     builder.SetNodeId(nodeId);
                     builder.WhenStarted(async (service, token) => await service.Start(token));
                     builder.WhenStopping(stopRequestedSource);
-                    builder.WithLeadershipManager(manager);
+                    builder.WithLeaseManager(manager);
                 });
 
             host.Run();
 
-            A.CallTo(() => manager.ReleaseLock(nodeId)).MustHaveHappened(Repeated.Exactly.Once);
+            A.CallTo(() => manager.ReleaseLease(nodeId)).MustHaveHappened(Repeated.Exactly.Once);
         }
 
         [Fact]

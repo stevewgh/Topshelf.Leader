@@ -40,7 +40,7 @@ namespace Topshelf.Leader
                 }
                 catch (TaskCanceledException) { }
 
-                await leaderConfiguration.LeadershipManager.ReleaseLock(leaderConfiguration.NodeId);
+                await leaderConfiguration.LeaseManager.ReleaseLease(leaderConfiguration.NodeId);
             });
 
             configurator.WhenStarted(async service =>
