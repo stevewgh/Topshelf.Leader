@@ -44,9 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BadService.cs" />
-    <Compile Include="DictatorshipLeadershipManager.cs" />
-    <Compile Include="BadLeadershipManager.cs" />
-    <Compile Include="FlipFlopLeadershipManager.cs" />
+    <Compile Include="DictatorshipLeaseManager.cs" />
+    <Compile Include="BadLeaseManager.cs" />
+    <Compile Include="FlipFlopLeaseManager.cs" />
     <Compile Include="GoodService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -14,7 +14,7 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public async Task only_one_node_should_be_running_at_any_one_time()
         {
-            var manager = new InMemoryLeadershipManager(node1);
+            var manager = new InMemoryLeaseManager(node1);
 
             BuildSubject(node1, manager, out var service1, out var node1Runner);
             BuildSubject(node2, manager, out var service2, out var node2Runner);
@@ -40,7 +40,7 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public async Task should_be_notified_when_the_leadership_changes()
         {
-            var manager = new InMemoryLeadershipManager(node1);
+            var manager = new InMemoryLeaseManager(node1);
             var node1Elected = false;
             var node2Elected = false;
 
@@ -62,12 +62,12 @@ namespace Topshelf.Leader.Tests
             Assert.True(node2Elected);
         }
 
-        private static void BuildSubject(string nodeid, ILeadershipManager manager, out TestService servicewithStopSupport, out Runner<TestService> runner)
+        private static void BuildSubject(string nodeid, ILeaseManager manager, out TestService servicewithStopSupport, out Runner<TestService> runner)
         {
             BuildSubject(nodeid, manager, b => { }, out servicewithStopSupport, out runner);
         }
 
-        private static void BuildSubject(string nodeid, ILeadershipManager manager, Action<bool> whenLeaderElected, out TestService servicewithStopSupport, out Runner<TestService> runner)
+        private static void BuildSubject(string nodeid, ILeaseManager manager, Action<bool> whenLeaderElected, out TestService servicewithStopSupport, out Runner<TestService> runner)
         {
             var config = new LeaderConfigurationBuilder<TestService>()
                 .SetNodeId(nodeid)
@@ -75,7 +75,7 @@ namespace Topshelf.Leader.Tests
                 .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (s, token) => await s.Start(token))
                 .WhenLeaderIsElected(whenLeaderElected)
-                .WithLeadershipManager(manager);
+                .WithLeaseManager(manager);
 
             servicewithStopSupport = new TestService();
             runner = new Runner<TestService>(servicewithStopSupport, config.Build());

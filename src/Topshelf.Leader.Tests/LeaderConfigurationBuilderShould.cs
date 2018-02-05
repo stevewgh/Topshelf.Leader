@@ -89,15 +89,15 @@ namespace Topshelf.Leader.Tests
         }
 
         [Fact]
-        public void use_the_lock_manager_that_is_provided()
+        public void use_the_lease_manager_that_is_provided()
         {
-            var manager = A.Fake<ILeadershipManager>();
+            var manager = A.Fake<ILeaseManager>();
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.WithLeadershipManager(manager);
+            builder.WithLeaseManager(manager);
 
-            Assert.Same(manager, builder.Build().LeadershipManager);
+            Assert.Same(manager, builder.Build().LeaseManager);
         }
     }
 }

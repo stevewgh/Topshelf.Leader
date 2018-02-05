@@ -5,30 +5,35 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader.ConsoleTest
 {
-    public class BadLeadershipManager : ILeadershipManager
+    public class BadLeaseManager : ILeaseManager
     {
         private readonly int secondsInEachState;
         private readonly Stopwatch timeThatWeHaveBeenLeader = new Stopwatch();
 
-        public BadLeadershipManager(int secondsInEachState)
+        public BadLeaseManager(int secondsInEachState)
         {
             this.secondsInEachState = secondsInEachState;
             timeThatWeHaveBeenLeader.Start();
         }
 
-        public async Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        public async Task<bool> AcquireLease(string nodeId, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
             await Task.Delay(500, token);
             return true;
         }
 
-        public async Task<bool> RenewLock(string nodeId, CancellationToken token)
+        public async Task<bool> RenewLease(string nodeId, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
 
             await Task.Delay(500, token);
             return true;
+        }
+
+        public Task ReleaseLease(string nodeId)
+        {
+            return Task.FromResult(true);
         }
 
         private void LeaderSwapOverIfRequired()
