@@ -41,6 +41,16 @@ namespace Topshelf.Leader.ConsoleTest
             return weAreTheLeader;
         }
 
+        public Task ReleaseLock(string nodeId, CancellationToken token)
+        {
+            if (weAreTheLeader)
+            {
+                LeaderSwapOverIfRequired();
+            }
+
+            return Task.FromResult(true);
+        }
+
         private void LeaderSwapOverIfRequired()
         {
             if (weAreTheLeader && timeThatWeHaveBeenLeader.Elapsed.TotalSeconds >= secondsInEachState)

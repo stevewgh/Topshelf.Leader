@@ -8,5 +8,7 @@ namespace Topshelf.Leader
         Task<bool> AcquireLock(string nodeId, CancellationToken token);
 
         Task<bool> RenewLock(string nodeId, CancellationToken token);
+
+        Task ReleaseLock(string nodeId, CancellationToken token);
     }
 }

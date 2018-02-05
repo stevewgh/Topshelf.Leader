@@ -17,5 +17,10 @@ namespace Topshelf.Leader.ConsoleTest
             await Task.Delay(1000, token);
             return true;
         }
+
+        public Task ReleaseLock(string nodeId, CancellationToken token)
+        {
+            return Task.FromResult(true);
+        }
     }
 }
