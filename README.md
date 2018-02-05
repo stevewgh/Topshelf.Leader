@@ -65,11 +65,18 @@ The `WhenStarted()` method will be executed when the service discovers that it i
     }
 ```
 
-## Leadership Manager
+## Lease Manager
 
-The responsibility for deciding who is the leader, and maintaining that status is delegated to any class which implements the  `ILeaderManager` interface. You configure which manager to use during the configuration stage. If one isn't supplied then an in memory manager is used - this is not muti-process aware so is **not suitable for production use - only for testing**. 
+The responsibility for deciding if your service is the leader is delegated to any class which implements the `ILeaseManager` interface. The process is 
+as follows:
 
-### Configuring the leadership manager
+1. The process will call ILeaseManager.AcquireLease() until we have obtained a lease (which means that we are the leader)
+2. Do work and call ILeaseManager.ReleaseLease() until asked to stop
+3. When asked to stop the service we call ILeaseManager.ReleaseLease()
+
+You configure which manager to use during the configuration stage. If one isn't supplied then an in memory manager is used. The in memory manager is not muti-process aware so it is **not suitable for production use**. 
+
+### Configuring the lease manager
 ```c#
 var rc = HostFactory.Run(x =>
 {
@@ -81,7 +88,7 @@ var rc = HostFactory.Run(x =>
             {
                 await service.Start(token);
             });
-            builder.WithLeadershipManager(new YourManagerHere());
+            builder.WithLeaseManager(new YourManagerHere());
         });
         s.ConstructUsing(name => new TheService());
         s.WhenStopped(service => service.Stop());
@@ -89,13 +96,13 @@ var rc = HostFactory.Run(x =>
 }
 ```
 
-### Example of a simple leadership manager
+### Example of a simple lease manager
 ```c#
-public class InMemoryLeadershipManager : ILeadershipManager
+public class InMemoryLeaseManager : ILeaseManager
 {
     private string owningNodeId;
 
-    public InMemoryLeadershipManager(string owningNodeId)
+    public InMemoryLeaseManager(string owningNodeId)
     {
         this.owningNodeId = owningNodeId;
     }
@@ -105,14 +112,20 @@ public class InMemoryLeadershipManager : ILeadershipManager
         this.owningNodeId = newLeaderId;
     }
 
-    public Task<bool> AcquireLock(string nodeId, CancellationToken token)
+    public Task<bool> AcquireLease(string nodeId, CancellationToken token)
     {
         return Task.FromResult(nodeId == owningNodeId);
     }
 
-    public Task<bool> RenewLock(string nodeId, CancellationToken token)
+    public Task<bool> RenewLease(string nodeId, CancellationToken token)
     {
         return Task.FromResult(nodeId == owningNodeId);
+    }
+
+    public Task ReleaseLease(string nodeId)
+    {
+		owningNodeId = string.Empty;
+        return Task.FromResult(true);
     }
 }
 ```
