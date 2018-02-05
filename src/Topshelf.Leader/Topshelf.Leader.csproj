@@ -41,8 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ILeadershipManager.cs" />
-    <Compile Include="InMemory\InMemoryLeadershipManager.cs" />
+    <Compile Include="ILeaseManager.cs" />
+    <Compile Include="InMemory\InMemoryLeaseManager.cs" />
     <Compile Include="LeaderConfiguration.cs" />
     <Compile Include="LeaderConfigurationBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

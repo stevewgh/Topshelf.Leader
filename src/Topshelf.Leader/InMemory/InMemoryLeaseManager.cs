@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader.InMemory
 {
-    public class InMemoryLeadershipManager : ILeadershipManager
+    public class InMemoryLeaseManager : ILeaseManager
     {
         private string owningNodeId;
 
-        public InMemoryLeadershipManager(string owningNodeId)
+        public InMemoryLeaseManager(string owningNodeId)
         {
             this.owningNodeId = owningNodeId;
         }
@@ -17,14 +17,20 @@ namespace Topshelf.Leader.InMemory
             this.owningNodeId = newLeaderId;
         }
 
-        public Task<bool> AcquireLock(string nodeId, CancellationToken token)
+        public Task<bool> AcquireLease(string nodeId, CancellationToken token)
         {
             return Task.FromResult(nodeId == owningNodeId);
         }
 
-        public Task<bool> RenewLock(string nodeId, CancellationToken token)
+        public Task<bool> RenewLease(string nodeId, CancellationToken token)
         {
             return Task.FromResult(nodeId == owningNodeId);
+        }
+
+        public Task ReleaseLease(string nodeId)
+        {
+            owningNodeId = string.Empty;
+            return Task.FromResult(true);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using FakeItEasy;
 using Topshelf.HostConfigurators;
 using Topshelf.Hosts;
 using Topshelf.Leader.Tests.Services;
@@ -27,6 +28,28 @@ namespace Topshelf.Leader.Tests
             host.Run();
 
             Assert.True(stopRequestedSource.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void release_the_lease_when_the_service_is_shutting_down()
+        {
+            const string nodeId = "theNodeId";
+            var manager = A.Fake<ILeaseManager>();
+            var testService = new TestServicewithStopSupport();
+            var stopRequestedSource = new CancellationTokenSource();
+            var host = BuildTestHost(
+                testService,
+                builder =>
+                {
+                    builder.SetNodeId(nodeId);
+                    builder.WhenStarted(async (service, token) => await service.Start(token));
+                    builder.WhenStopping(stopRequestedSource);
+                    builder.WithLeaseManager(manager);
+                });
+
+            host.Run();
+
+            A.CallTo(() => manager.ReleaseLease(nodeId)).MustHaveHappened(Repeated.Exactly.Once);
         }
 
         [Fact]

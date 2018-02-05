@@ -32,13 +32,15 @@ namespace Topshelf.Leader
 
             var leaderConfiguration = configurationBuilder.Build();
 
-            configurator.BeforeStoppingService(() =>
+            configurator.BeforeStoppingService(async () =>
             {
                 try
                 {
                     leaderConfiguration.ServiceIsStopping.Cancel();
                 }
                 catch (TaskCanceledException) { }
+
+                await leaderConfiguration.LeaseManager.ReleaseLease(leaderConfiguration.NodeId);
             });
 
             configurator.WhenStarted(async service =>

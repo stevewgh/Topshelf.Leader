@@ -14,7 +14,7 @@ namespace Topshelf.Leader
         private TimeSpan timeBetweenLeaseUpdates;
         private TimeSpan timeBetweenCheckingLeaderHealth;
         private string nodeId;
-        private ILeadershipManager leadershipManager;
+        private ILeaseManager leaseManager;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
 
@@ -23,14 +23,14 @@ namespace Topshelf.Leader
             timeBetweenLeaseUpdates = DefaultTimeBetweenLeaseUpdates;
             timeBetweenCheckingLeaderHealth = DefaultTimeBetweenCheckingLeaderHealth;
             nodeId = Guid.NewGuid().ToString();
-            leadershipManager = new InMemoryLeadershipManager(nodeId);
+            leaseManager = new InMemoryLeaseManager(nodeId);
             whenLeaderIsElected = b => { };
             serviceIsStopping = new CancellationTokenSource();
         }
 
-        public LeaderConfigurationBuilder<T> WithLeadershipManager(ILeadershipManager manager)
+        public LeaderConfigurationBuilder<T> WithLeaseManager(ILeaseManager manager)
         {
-            leadershipManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            leaseManager = manager ?? throw new ArgumentNullException(nameof(manager));
             return this;
         }
 
@@ -92,7 +92,7 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
             }
 
-            return new LeaderConfiguration<T>(whenStarted, nodeId, leadershipManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping, whenLeaderIsElected);
+            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManager, timeBetweenLeaseUpdates, timeBetweenCheckingLeaderHealth, serviceIsStopping, whenLeaderIsElected);
         }
 
     }
