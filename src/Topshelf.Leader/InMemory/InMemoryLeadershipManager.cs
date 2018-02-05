@@ -27,7 +27,7 @@ namespace Topshelf.Leader.InMemory
             return Task.FromResult(nodeId == owningNodeId);
         }
 
-        public Task ReleaseLock(string nodeId, CancellationToken token)
+        public Task ReleaseLock(string nodeId)
         {
             owningNodeId = string.Empty;
             return Task.FromResult(true);

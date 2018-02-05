@@ -18,7 +18,7 @@ namespace Topshelf.Leader.ConsoleTest
             return true;
         }
 
-        public Task ReleaseLock(string nodeId, CancellationToken token)
+        public Task ReleaseLock(string nodeId)
         {
             return Task.FromResult(true);
         }
