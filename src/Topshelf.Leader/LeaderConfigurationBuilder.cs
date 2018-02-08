@@ -85,7 +85,7 @@ namespace Topshelf.Leader
             return this;
         }
 
-        internal LeaderConfiguration<T> Build()
+        public LeaderConfiguration<T> Build()
         {
             if (whenStarted == null)
             {
