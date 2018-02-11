@@ -49,7 +49,7 @@ namespace Topshelf.Leader.Tests
 
             host.Run();
 
-            A.CallTo(() => manager.ReleaseLease(nodeId)).MustHaveHappened(Repeated.Exactly.Once);
+            A.CallTo(() => manager.ReleaseLease(A<LeaseOptions>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
         }
 
         [Fact]

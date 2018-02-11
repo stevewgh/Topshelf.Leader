@@ -6,19 +6,19 @@ namespace Topshelf.Leader.ConsoleTest
 {
     public class DictatorshipLeaseManager : ILeaseManager
     {
-        public async Task<bool> AcquireLease(string nodeId, CancellationToken token)
+        public async Task<bool> AcquireLease(LeaseOptions options, CancellationToken token)
         {
             await Task.Delay(1000, token);
             return true;
         }
 
-        public async Task<bool> RenewLease(string nodeId, CancellationToken token)
+        public async Task<bool> RenewLease(LeaseOptions options, CancellationToken token)
         {
             await Task.Delay(1000, token);
             return true;
         }
 
-        public Task ReleaseLease(string nodeId)
+        public Task ReleaseLease(LeaseOptions options)
         {
             return Task.FromResult(true);
         }

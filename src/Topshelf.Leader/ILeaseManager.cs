@@ -1,14 +1,37 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
+    public struct LeaseOptions
+    {
+        public string NodeId { get; }
+        public TimeSpan LeaseLength { get; }
+
+        public LeaseOptions(string nodeId, TimeSpan leaseLength)
+        {
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", nameof(nodeId));
+            }
+
+            if(leaseLength <= TimeSpan.Zero)
+            {
+                throw new ArgumentException("Value cannot be less than or equal to TimeSpan.Zero.", nameof(leaseLength));
+            }
+
+            NodeId = nodeId;
+            LeaseLength = leaseLength;
+        }
+    }
+
     public interface ILeaseManager
     {
-        Task<bool> AcquireLease(string nodeId, CancellationToken token);
+        Task<bool> AcquireLease(LeaseOptions options, CancellationToken token);
 
-        Task<bool> RenewLease(string nodeId, CancellationToken token);
+        Task<bool> RenewLease(LeaseOptions options, CancellationToken token);
 
-        Task ReleaseLease(string nodeId);
+        Task ReleaseLease(LeaseOptions options);
     }
 }

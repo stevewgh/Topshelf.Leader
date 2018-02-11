@@ -34,7 +34,7 @@ namespace Topshelf.Leader.Tests
         {
             var service = A.Fake<ITestService>();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(false);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(false);
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
@@ -59,8 +59,8 @@ namespace Topshelf.Leader.Tests
         {
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
@@ -84,8 +84,8 @@ namespace Topshelf.Leader.Tests
         {
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
@@ -100,7 +100,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
         }
 
         [Fact]
@@ -108,8 +108,8 @@ namespace Topshelf.Leader.Tests
         {
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(false));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(false));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
@@ -124,7 +124,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
         }
 
         [Fact]
@@ -132,8 +132,8 @@ namespace Topshelf.Leader.Tests
         {
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
@@ -148,7 +148,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace Topshelf.Leader.Tests
             var exception = new Exception();
             var service = BuildBadTestService(exception);
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStarted(async (svc, token) =>
@@ -177,8 +177,8 @@ namespace Topshelf.Leader.Tests
             var exception = new Exception();
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(exception);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(exception);
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStarted(async (svc, token) =>
@@ -199,8 +199,8 @@ namespace Topshelf.Leader.Tests
             var leadershipManagerException = new Exception("Leadership manager stopped working");
             var service = BuildBadTestService(serviceException);
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<string>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(leadershipManagerException);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).ThrowsAsync(leadershipManagerException);
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStarted(async (svc, token) =>
@@ -221,7 +221,7 @@ namespace Topshelf.Leader.Tests
             var exception = new Exception();
             var service = BuildBadTestService(exception);
             var manager = A.Fake<ILeaseManager>();
-            A.CallTo(() => manager.AcquireLease(A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
 
             var serviceStopping = new CancellationTokenSource();
             var config = new LeaderConfigurationBuilder<ITestService>()

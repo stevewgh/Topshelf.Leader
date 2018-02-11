@@ -19,19 +19,19 @@ namespace Topshelf.Leader.InMemory
             this.owningNodeId = newLeaderId;
         }
 
-        public Task<bool> AcquireLease(string nodeId, CancellationToken token)
+        public Task<bool> AcquireLease(LeaseOptions options, CancellationToken token)
         {
             WarnOfUse();
-            return Task.FromResult(nodeId == owningNodeId);
+            return Task.FromResult(options.NodeId == owningNodeId);
         }
 
-        public Task<bool> RenewLease(string nodeId, CancellationToken token)
+        public Task<bool> RenewLease(LeaseOptions options, CancellationToken token)
         {
             WarnOfUse();
-            return Task.FromResult(nodeId == owningNodeId);
+            return Task.FromResult(options.NodeId == owningNodeId);
         }
 
-        public Task ReleaseLease(string nodeId)
+        public Task ReleaseLease(LeaseOptions options)
         {
             WarnOfUse();
             owningNodeId = string.Empty;

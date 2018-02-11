@@ -16,14 +16,14 @@ namespace Topshelf.Leader.ConsoleTest
             timeThatWeHaveBeenLeader.Start();
         }
 
-        public async Task<bool> AcquireLease(string nodeId, CancellationToken token)
+        public async Task<bool> AcquireLease(LeaseOptions options, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
             await Task.Delay(500, token);
             return true;
         }
 
-        public async Task<bool> RenewLease(string nodeId, CancellationToken token)
+        public async Task<bool> RenewLease(LeaseOptions options, CancellationToken token)
         {
             LeaderSwapOverIfRequired();
 
@@ -31,7 +31,7 @@ namespace Topshelf.Leader.ConsoleTest
             return true;
         }
 
-        public Task ReleaseLease(string nodeId)
+        public Task ReleaseLease(LeaseOptions options)
         {
             return Task.FromResult(true);
         }

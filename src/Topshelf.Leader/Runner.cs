@@ -82,7 +82,7 @@ namespace Topshelf.Leader
         private async Task BlockUntilWeAreTheLeader()
         {
             var token = config.ServiceIsStopping.Token;
-            while (!await config.LeaseManager.AcquireLease(config.NodeId, token))
+            while (!await config.LeaseManager.AcquireLease(new LeaseOptions(config.NodeId, config.LeaseUpdateEvery), token))
             {
                 logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaderCheckEvery);
                 await Task.Delay(config.LeaderCheckEvery, token);
@@ -95,7 +95,7 @@ namespace Topshelf.Leader
         {
             try
             {
-                while (await config.LeaseManager.RenewLease(config.NodeId, stopRenewing))
+                while (await config.LeaseManager.RenewLease(new LeaseOptions(config.NodeId, config.LeaseUpdateEvery), stopRenewing))
                 {
                     logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseUpdateEvery);
                     await Task.Delay(config.LeaseUpdateEvery, stopRenewing);
