@@ -71,8 +71,8 @@ namespace Topshelf.Leader.Tests
         {
             var config = new LeaderConfigurationBuilder<TestService>()
                 .SetNodeId(nodeid)
-                .AttemptToBeTheLeaderEvery(TimeSpan.FromMilliseconds(100))
-                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (s, token) => await s.Start(token))
                 .WhenLeaderIsElected(whenLeaderElected)
                 .WithLeaseManager(manager);

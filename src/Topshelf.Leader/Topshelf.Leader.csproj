@@ -45,6 +45,7 @@
     <Compile Include="InMemory\InMemoryLeaseManager.cs" />
     <Compile Include="LeaderConfiguration.cs" />
     <Compile Include="LeaderConfigurationBuilder.cs" />
+    <Compile Include="LeaseCriteria.cs" />
     <Compile Include="LeaseLengthCalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runner.cs" />

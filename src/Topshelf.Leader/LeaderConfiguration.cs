@@ -10,7 +10,7 @@ namespace Topshelf.Leader
             Func<T, CancellationToken, Task> startup,
             string nodeId,
             ILeaseManager leaseManager,
-            TimeSpan leaseUpdateEvery,
+            TimeSpan leaseRenewalEvery,
             TimeSpan leaderCheckEvery,
             CancellationTokenSource serviceIsStopping, 
             Action<bool> whenLeaderIsElected)
@@ -18,14 +18,14 @@ namespace Topshelf.Leader
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
             LeaseManager = leaseManager ?? throw new ArgumentNullException(nameof(leaseManager));
 
-            if (leaseUpdateEvery <= TimeSpan.Zero)
+            if (leaseRenewalEvery <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(leaseUpdateEvery), "Must not be less than or equal to zero.");
+                throw new ArgumentOutOfRangeException(nameof(leaseRenewalEvery), "Must not be less than or equal to zero.");
             }
 
             if (leaderCheckEvery <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(leaseUpdateEvery), "Must not be less than or equal to zero.");
+                throw new ArgumentOutOfRangeException(nameof(leaseRenewalEvery), "Must not be less than or equal to zero.");
             }
 
             if (string.IsNullOrEmpty(nodeId))
@@ -34,17 +34,12 @@ namespace Topshelf.Leader
             }
 
             NodeId = nodeId;
-            LeaseUpdateEvery = leaseUpdateEvery;
-            LeaderCheckEvery = leaderCheckEvery;
+            LeaseCriteria = new LeaseCriteria(leaseRenewalEvery, leaderCheckEvery);
             ServiceIsStopping = serviceIsStopping;
             WhenLeaderIsElected = whenLeaderIsElected;
         }
 
         public string NodeId { get; }
-
-        public TimeSpan LeaseUpdateEvery { get; }
-
-        public TimeSpan LeaderCheckEvery { get; }
 
         public CancellationTokenSource ServiceIsStopping { get; }
 
@@ -53,5 +48,7 @@ namespace Topshelf.Leader
         public Func<T, CancellationToken, Task> Startup { get; }
 
         public ILeaseManager LeaseManager { get; }
+
+        public LeaseCriteria LeaseCriteria { get; }
     }
 }

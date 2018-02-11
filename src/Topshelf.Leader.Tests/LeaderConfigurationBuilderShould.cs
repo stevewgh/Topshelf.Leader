@@ -40,6 +40,19 @@ namespace Topshelf.Leader.Tests
             Assert.Equal(nodeid, builder.Build().NodeId);
         }
 
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void prevent_a_lease_from_being_aquired_more_frequently_than_it_is_renewed(int aquireEveryDays)
+        {
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => Task.CompletedTask);
+            builder.RenewLeaseEvery(TimeSpan.FromDays(2));
+            builder.AquireLeaseEvery(TimeSpan.FromDays(aquireEveryDays));
+
+            Assert.Throws<HostConfigurationException>(() => builder.Build());
+        }
+
         [Fact]
         public void use_the_lease_renewal_time_that_is_provided()
         {
@@ -47,9 +60,10 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.UpdateLeaseEvery(leaseUpdate);
+            builder.RenewLeaseEvery(leaseUpdate);
+            builder.AquireLeaseEvery(TimeSpan.FromDays(2));
 
-            Assert.Equal(leaseUpdate, builder.Build().LeaseUpdateEvery);
+            Assert.Equal(leaseUpdate, builder.Build().LeaseCriteria.RenewLeaseEvery);
         }
 
         [Theory]
@@ -61,19 +75,19 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => builder.UpdateLeaseEvery(leaseUpdate));
+            Assert.Throws<ArgumentOutOfRangeException>(() => builder.RenewLeaseEvery(leaseUpdate));
         }
 
         [Fact]
-        public void use_the_health_check_time_that_is_provided()
+        public void use_the_aquire_lease_time_that_is_provided()
         {
             var healthCheckEvery = TimeSpan.FromDays(1);
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.AttemptToBeTheLeaderEvery(healthCheckEvery);
+            builder.AquireLeaseEvery(healthCheckEvery);
 
-            Assert.Equal(healthCheckEvery, builder.Build().LeaderCheckEvery);
+            Assert.Equal(healthCheckEvery, builder.Build().LeaseCriteria.AquireLeaseEvery);
         }
 
         [Theory]
@@ -85,7 +99,7 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => builder.AttemptToBeTheLeaderEvery(healthCheckEvery));
+            Assert.Throws<ArgumentOutOfRangeException>(() => builder.AquireLeaseEvery(healthCheckEvery));
         }
 
         [Fact]

@@ -14,7 +14,7 @@ namespace Topshelf.Leader.ConsoleTest
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
-                        builder.AttemptToBeTheLeaderEvery(TimeSpan.FromSeconds(2));
+                        builder.AquireLeaseEvery(TimeSpan.FromSeconds(2));
                         builder.WhenLeaderIsElected(iamLeader =>
                         {
                             if (iamLeader)

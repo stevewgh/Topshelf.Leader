@@ -4,29 +4,24 @@ using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
-    public struct LeaseOptions
+    public class LeaseOptions
     {
+        public LeaseCriteria LeaseCriteria { get; }
         public string NodeId { get; }
-        public TimeSpan LeaseLength { get; }
 
-        public LeaseOptions(string nodeId, TimeSpan leaseLength)
+        public LeaseOptions(string nodeId, LeaseCriteria leaseCriteria)
         {
             if (string.IsNullOrEmpty(nodeId))
             {
                 throw new ArgumentException("Value cannot be null or empty.", nameof(nodeId));
             }
 
-            if(leaseLength <= TimeSpan.Zero)
-            {
-                throw new ArgumentException("Value cannot be less than or equal to TimeSpan.Zero.", nameof(leaseLength));
-            }
-
+            LeaseCriteria = leaseCriteria ?? throw new ArgumentNullException(nameof(leaseCriteria));
             NodeId = nodeId;
-            LeaseLength = leaseLength;
         }
     }
 
-    public struct LeaseReleaseOptions
+    public class LeaseReleaseOptions
     {
         public string NodeId { get; }
 

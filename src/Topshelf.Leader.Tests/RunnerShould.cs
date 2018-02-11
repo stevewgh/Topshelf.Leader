@@ -38,7 +38,8 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .AttemptToBeTheLeaderEvery(TimeSpan.FromMilliseconds(100))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
@@ -64,7 +65,7 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
@@ -89,7 +90,7 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
@@ -113,7 +114,7 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
@@ -137,7 +138,7 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .UpdateLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);

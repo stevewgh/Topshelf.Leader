@@ -4,9 +4,10 @@ namespace Topshelf.Leader
 {
     public class LeaseLengthCalculator
     {
-        public TimeSpan Calculate(TimeSpan tryToAquireLeaseEvery, TimeSpan leaseRenewalEvery)
+        public virtual TimeSpan Calculate(LeaseCriteria leaseCriteria)
         {
-            throw new NotImplementedException();
+            return TimeSpan.FromSeconds((leaseCriteria.RenewLeaseEvery.TotalSeconds +
+                                  leaseCriteria.AquireLeaseEvery.TotalSeconds) / 2);
         }
     }
 }
