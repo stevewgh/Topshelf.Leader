@@ -42,7 +42,7 @@ public class Program
               s.ConstructUsing(name => new TheService());
               s.WhenStopped(service => service.Stop());
           });
-      }
+      });
   }
 }
 ```
@@ -61,6 +61,11 @@ The `WhenStarted()` method will be executed when the service discovers that it i
             {
                 // do your work here, if it's async pass the stopToken to it
             }
+        }
+
+		public void Stop()
+        {
+            // Tidy up unmanaged resources
         }
     }
 ```
