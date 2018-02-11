@@ -71,8 +71,9 @@ The responsibility for deciding if your service is the leader is delegated to an
 as follows:
 
 1. The process will call ILeaseManager.AcquireLease() until we have obtained a lease (which means that we are the leader)
-2. Do work and call ILeaseManager.ReleaseLease() until asked to stop
-3. When asked to stop the service we call ILeaseManager.ReleaseLease()
+2. If we are the leader, the delegate passed to the WhenStarted() builder method is run.
+3. Whilst we are running the ILeaseManager.RenewLease() method is called.
+4. When asked to stop the service we call ILeaseManager.ReleaseLease()
 
 You configure which manager to use during the configuration stage. If one isn't supplied then an in memory manager is used. The in memory manager is not muti-process aware so it is **not suitable for production use**. 
 

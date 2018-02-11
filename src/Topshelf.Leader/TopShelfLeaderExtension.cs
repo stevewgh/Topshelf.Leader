@@ -20,31 +20,39 @@ namespace Topshelf.Leader
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            var configurationBuilder = new LeaderConfigurationBuilder<T>();
-
-            builder(configurationBuilder);
-
-            if (!configurationBuilder.ServiceStoppingTokenIsSet)
-            {
-                var serviceStoppingTokenSource = new CancellationTokenSource();
-                configurationBuilder.WhenStopping(serviceStoppingTokenSource);
-            }
-
-            var leaderConfiguration = configurationBuilder.Build();
+            LeaderConfiguration<T> leaderConfiguration = null;
 
             configurator.BeforeStoppingService(async () =>
             {
                 try
                 {
-                    leaderConfiguration.ServiceIsStopping.Cancel();
+                    leaderConfiguration?.ServiceIsStopping.Cancel();
                 }
                 catch (TaskCanceledException) { }
 
-                await leaderConfiguration.LeaseManager.ReleaseLease(leaderConfiguration.NodeId);
+                if (leaderConfiguration != null)
+                {
+                    await leaderConfiguration.LeaseManager.ReleaseLease(leaderConfiguration.NodeId);
+                }
             });
 
             configurator.WhenStarted(async service =>
             {
+                if (leaderConfiguration == null)
+                {
+                    var configurationBuilder = new LeaderConfigurationBuilder<T>();
+
+                    builder(configurationBuilder);
+
+                    if (!configurationBuilder.ServiceStoppingTokenIsSet)
+                    {
+                        var serviceStoppingTokenSource = new CancellationTokenSource();
+                        configurationBuilder.WhenStopping(serviceStoppingTokenSource);
+                    }
+
+                    leaderConfiguration = configurationBuilder.Build();
+                }
+
                 try
                 {
                     var worker = new Runner<T>(service, leaderConfiguration);
