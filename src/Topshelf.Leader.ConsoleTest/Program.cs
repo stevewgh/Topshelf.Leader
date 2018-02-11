@@ -9,7 +9,6 @@ namespace Topshelf.Leader.ConsoleTest
             var rc = HostFactory.Run(x =>
             {
                 var svc = new BadService();
-                var leadershipManager = new BadLeaseManager(5);
 
                 x.Service<BadService>(s =>
                 {
@@ -27,7 +26,6 @@ namespace Topshelf.Leader.ConsoleTest
                             Console.ForegroundColor = ConsoleColor.Gray;
                             Console.BackgroundColor = ConsoleColor.Black;
                         });
-                        builder.WithLeaseManager(leadershipManager);
                         builder.WhenStarted(async (service, token) =>
                         {
                             await service.Start(token);

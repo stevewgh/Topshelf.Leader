@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Topshelf.Logging;
 
 namespace Topshelf.Leader
 {
@@ -10,6 +11,7 @@ namespace Topshelf.Leader
     {
         private readonly T service;
         private readonly LeaderConfiguration<T> config;
+        private readonly LogWriter logger = HostLogger.Get<Runner<T>>();
 
         public Runner(T service, LeaderConfiguration<T> config)
         {
@@ -82,9 +84,10 @@ namespace Topshelf.Leader
             var token = config.ServiceIsStopping.Token;
             while (!await config.LeaseManager.AcquireLease(config.NodeId, token))
             {
+                logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaderCheckEvery);
                 await Task.Delay(config.LeaderCheckEvery, token);
             }
-
+            logger.DebugFormat("NodeId {0} has been elected as leader", config.NodeId);
             config.WhenLeaderIsElected(true);
         }
 
@@ -94,11 +97,13 @@ namespace Topshelf.Leader
             {
                 while (await config.LeaseManager.RenewLease(config.NodeId, stopRenewing))
                 {
+                    logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseUpdateEvery);
                     await Task.Delay(config.LeaseUpdateEvery, stopRenewing);
                 }
             }
             finally 
             {
+                logger.DebugFormat("NodeId {0} stopped renewing the lease.", config.NodeId);
                 noLongerTheLeader.Cancel();
                 config.WhenLeaderIsElected(false);
             }
