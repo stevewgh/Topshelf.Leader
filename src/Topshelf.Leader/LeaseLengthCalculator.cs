@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Topshelf.Leader
 {
-    class LeaseLengthCalculator
+    public class LeaseLengthCalculator
     {
+        public TimeSpan Calculate(TimeSpan tryToAquireLeaseEvery, TimeSpan leaseRenewalEvery)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -41,7 +41,7 @@ namespace Topshelf.Leader.ConsoleTest
             return weAreTheLeader;
         }
 
-        public Task ReleaseLease(LeaseOptions options)
+        public Task ReleaseLease(LeaseReleaseOptions options)
         {
             if (weAreTheLeader)
             {

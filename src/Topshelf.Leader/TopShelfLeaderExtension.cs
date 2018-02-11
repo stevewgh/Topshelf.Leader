@@ -32,7 +32,7 @@ namespace Topshelf.Leader
 
                 if (leaderConfiguration != null)
                 {
-                    await leaderConfiguration.LeaseManager.ReleaseLease(new LeaseOptions(leaderConfiguration.NodeId, leaderConfiguration.LeaseUpdateEvery));
+                    await leaderConfiguration.LeaseManager.ReleaseLease(new LeaseReleaseOptions(leaderConfiguration.NodeId));
                 }
             });
 

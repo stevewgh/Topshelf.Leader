@@ -26,12 +26,26 @@ namespace Topshelf.Leader
         }
     }
 
+    public struct LeaseReleaseOptions
+    {
+        public string NodeId { get; }
+
+        public LeaseReleaseOptions(string nodeId)
+        {
+            if (string.IsNullOrEmpty(nodeId))
+            {
+                throw new ArgumentException("Value cannot be null or empty.", nameof(nodeId));
+            }
+            NodeId = nodeId;
+        }
+    }
+
     public interface ILeaseManager
     {
         Task<bool> AcquireLease(LeaseOptions options, CancellationToken token);
 
         Task<bool> RenewLease(LeaseOptions options, CancellationToken token);
 
-        Task ReleaseLease(LeaseOptions options);
+        Task ReleaseLease(LeaseReleaseOptions options);
     }
 }

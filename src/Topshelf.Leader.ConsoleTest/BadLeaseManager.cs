@@ -31,7 +31,7 @@ namespace Topshelf.Leader.ConsoleTest
             return true;
         }
 
-        public Task ReleaseLease(LeaseOptions options)
+        public Task ReleaseLease(LeaseReleaseOptions options)
         {
             return Task.FromResult(true);
         }

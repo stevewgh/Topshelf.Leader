@@ -31,7 +31,7 @@ namespace Topshelf.Leader.InMemory
             return Task.FromResult(options.NodeId == owningNodeId);
         }
 
-        public Task ReleaseLease(LeaseOptions options)
+        public Task ReleaseLease(LeaseReleaseOptions options)
         {
             WarnOfUse();
             owningNodeId = string.Empty;
