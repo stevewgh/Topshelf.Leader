@@ -109,7 +109,7 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.WithLeaseManager(manager);
+            builder.WithLeaseManager(managerBuilder => managerBuilder.Factory(criteria => manager));
 
             Assert.Same(manager, builder.Build().LeaseManager);
         }

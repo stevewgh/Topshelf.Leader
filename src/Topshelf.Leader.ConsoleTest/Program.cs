@@ -1,4 +1,5 @@
 ﻿using System;
+using Topshelf.Leader.InMemory;
 
 namespace Topshelf.Leader.ConsoleTest
 {
@@ -14,7 +15,8 @@ namespace Topshelf.Leader.ConsoleTest
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
-                        builder.AquireLeaseEvery(TimeSpan.FromSeconds(2));
+                        builder.RenewLeaseEvery(TimeSpan.FromSeconds(2));
+                        builder.AquireLeaseEvery(TimeSpan.FromSeconds(5));
                         builder.WhenLeaderIsElected(iamLeader =>
                         {
                             if (iamLeader)
@@ -29,6 +31,10 @@ namespace Topshelf.Leader.ConsoleTest
                         builder.WhenStarted(async (service, token) =>
                         {
                             await service.Start(token);
+                        });
+                        builder.WithLeaseManager(managerBuilder =>
+                        {
+                            managerBuilder.Factory(criteria => new InMemoryLeaseManager(managerBuilder.NodeId));
                         });
                     });
                     s.ConstructUsing(name => svc);

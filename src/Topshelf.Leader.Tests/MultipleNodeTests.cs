@@ -75,7 +75,7 @@ namespace Topshelf.Leader.Tests
                 .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
                 .WhenStarted(async (s, token) => await s.Start(token))
                 .WhenLeaderIsElected(whenLeaderElected)
-                .WithLeaseManager(manager);
+                .WithLeaseManager(builder => builder.Factory(criteria => manager));
 
             servicewithStopSupport = new TestService();
             runner = new Runner<TestService>(servicewithStopSupport, config.Build());

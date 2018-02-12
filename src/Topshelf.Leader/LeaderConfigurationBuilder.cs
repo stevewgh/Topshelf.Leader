@@ -14,23 +14,34 @@ namespace Topshelf.Leader
         private TimeSpan timeBetweenRenewing;
         private TimeSpan timeBetweenAquiring;
         private string nodeId;
-        private ILeaseManager leaseManager;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
+        private Action<LeaseManagerBuilder> leaseManagerAction;
 
         public LeaderConfigurationBuilder()
         {
             timeBetweenRenewing = DefaultTimeBetweenLeaseUpdates;
             timeBetweenAquiring = DefaultTimeBetweenCheckingLeaderHealth;
             nodeId = Guid.NewGuid().ToString();
-            leaseManager = new InMemoryLeaseManager(nodeId);
             whenLeaderIsElected = b => { };
             serviceIsStopping = new CancellationTokenSource();
         }
 
-        public LeaderConfigurationBuilder<T> WithLeaseManager(ILeaseManager manager)
+        public LeaderConfigurationBuilder<T> WithLeaseManager(Action<LeaseManagerBuilder> action)
         {
-            leaseManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            leaseManagerAction = action ?? throw new ArgumentNullException(nameof(action));
+            return this;
+        }
+
+        public LeaderConfigurationBuilder<T> WithLeaseManager(ILeaseManager leaseManager)
+        {
+            if (leaseManager == null)
+            {
+                throw new ArgumentNullException(nameof(leaseManager));
+            }
+
+            leaseManagerAction = (b) => b.Factory(criteria => leaseManager);
+
             return this;
         }
 
@@ -97,7 +108,17 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(AquireLeaseEvery)} must be greater than {nameof(RenewLeaseEvery)}.");
             }
 
-            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManager, timeBetweenRenewing, timeBetweenAquiring, serviceIsStopping, whenLeaderIsElected);
+            var leaseCriteria = new LeaseCriteria(timeBetweenRenewing, timeBetweenAquiring);
+            var leaseManagerBuilder = new LeaseManagerBuilder(nodeId, leaseCriteria);
+
+            if (leaseManagerAction == null)
+            {
+                leaseManagerAction = builder => builder.Factory(criteria => new InMemoryLeaseManager(this.nodeId));
+            }
+
+            leaseManagerAction(leaseManagerBuilder);
+
+            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManagerBuilder.Build(), leaseCriteria, serviceIsStopping, whenLeaderIsElected);
         }
 
     }

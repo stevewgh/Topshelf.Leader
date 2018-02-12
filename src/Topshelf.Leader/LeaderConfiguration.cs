@@ -10,23 +10,12 @@ namespace Topshelf.Leader
             Func<T, CancellationToken, Task> startup,
             string nodeId,
             ILeaseManager leaseManager,
-            TimeSpan leaseRenewalEvery,
-            TimeSpan leaderCheckEvery,
+            LeaseCriteria leaseCriteria,
             CancellationTokenSource serviceIsStopping, 
             Action<bool> whenLeaderIsElected)
         {
             Startup = startup ?? throw new ArgumentNullException(nameof(startup));
             LeaseManager = leaseManager ?? throw new ArgumentNullException(nameof(leaseManager));
-
-            if (leaseRenewalEvery <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(leaseRenewalEvery), "Must not be less than or equal to zero.");
-            }
-
-            if (leaderCheckEvery <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(leaseRenewalEvery), "Must not be less than or equal to zero.");
-            }
 
             if (string.IsNullOrEmpty(nodeId))
             {
@@ -34,7 +23,7 @@ namespace Topshelf.Leader
             }
 
             NodeId = nodeId;
-            LeaseCriteria = new LeaseCriteria(leaseRenewalEvery, leaderCheckEvery);
+            LeaseCriteria = leaseCriteria;
             ServiceIsStopping = serviceIsStopping;
             WhenLeaderIsElected = whenLeaderIsElected;
         }
