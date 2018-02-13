@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ITestService.cs" />
+    <Compile Include="LeaseConfigurationBuilderShould.cs" />
     <Compile Include="LeaderConfigurationBuilderShould.cs" />
     <Compile Include="LeaseLengthCalculatorShould.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

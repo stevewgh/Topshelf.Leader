@@ -38,13 +38,16 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
-                .AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
+                .Lease(lcb =>
+                    {
+                        lcb.RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                           .AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
+                           .WithLeaseManager(lc => manager);
+                    })
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
                 .Build();
 
             var runner = new Runner<ITestService>(service, config);
@@ -65,12 +68,11 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .Lease(lcb => {lcb.RenewLeaseEvery(TimeSpan.FromMilliseconds(50)).WithLeaseManager(manager);})
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
                 .Build();
 
             var runner = new Runner<ITestService>(service, config);
@@ -90,12 +92,11 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .Lease(lcb => { lcb.RenewLeaseEvery(TimeSpan.FromMilliseconds(50)).WithLeaseManager(manager); })
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
                 .Build();
 
             var runner = new Runner<ITestService>(service, config);
@@ -114,12 +115,8 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
-                .WhenStarted(async (svc, token) =>
-                {
-                    await svc.Start(token);
-                })
-                .WithLeaseManager(manager)
+                .Lease(lcb => { lcb.RenewLeaseEvery(TimeSpan.FromMilliseconds(50)).WithLeaseManager(manager); })
+                .WhenStarted(async (svc, token) => { await svc.Start(token); })
                 .Build();
 
             var runner = new Runner<ITestService>(service, config);
@@ -138,12 +135,11 @@ namespace Topshelf.Leader.Tests
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(1000))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .Lease(lcb => { lcb.RenewLeaseEvery(TimeSpan.FromMilliseconds(50)).WithLeaseManager(manager);})
                 .WhenStarted(async (svc, token) =>
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
                 .Build();
 
             var runner = new Runner<ITestService>(service, config);
@@ -165,7 +161,7 @@ namespace Topshelf.Leader.Tests
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
+                .Lease(lcb => lcb.WithLeaseManager(manager))
                 .Build();
 
             var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
@@ -186,7 +182,7 @@ namespace Topshelf.Leader.Tests
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
+                .Lease(lcb => lcb.WithLeaseManager(manager))
                 .Build();
 
             var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
@@ -208,7 +204,7 @@ namespace Topshelf.Leader.Tests
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
+                .Lease(lcb => lcb.WithLeaseManager(manager))
                 .Build();
 
             var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
@@ -231,7 +227,7 @@ namespace Topshelf.Leader.Tests
                 {
                     await svc.Start(token);
                 })
-                .WithLeaseManager(manager)
+                .Lease(lcb => lcb.WithLeaseManager(manager))
                 .Build();
 
             await Assert.ThrowsAnyAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());

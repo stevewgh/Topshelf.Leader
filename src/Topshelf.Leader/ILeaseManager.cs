@@ -6,17 +6,15 @@ namespace Topshelf.Leader
 {
     public class LeaseOptions
     {
-        public LeaseCriteria LeaseCriteria { get; }
         public string NodeId { get; }
 
-        public LeaseOptions(string nodeId, LeaseCriteria leaseCriteria)
+        public LeaseOptions(string nodeId)
         {
             if (string.IsNullOrEmpty(nodeId))
             {
                 throw new ArgumentException("Value cannot be null or empty.", nameof(nodeId));
             }
 
-            LeaseCriteria = leaseCriteria ?? throw new ArgumentNullException(nameof(leaseCriteria));
             NodeId = nodeId;
         }
     }

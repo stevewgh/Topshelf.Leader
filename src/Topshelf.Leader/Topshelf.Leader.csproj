@@ -44,11 +44,11 @@
     <Compile Include="ILeaseManager.cs" />
     <Compile Include="InMemory\InMemoryLeaseManager.cs" />
     <Compile Include="LeaderConfiguration.cs" />
-    <Compile Include="LeaseManagerBuilder.cs" />
+    <Compile Include="LeaseConfigurationBuilder.cs" />
     <Compile Include="LeaderConfigurationBuilder.cs" />
     <Compile Include="LeaseCriteria.cs" />
     <Compile Include="LeaseLengthCalculator.cs" />
-    <Compile Include="LeaseManagerConfiguration.cs" />
+    <Compile Include="LeaseConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Runner.cs" />
     <Compile Include="TopShelfLeaderExtension.cs" />

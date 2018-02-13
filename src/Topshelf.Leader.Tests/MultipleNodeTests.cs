@@ -71,11 +71,14 @@ namespace Topshelf.Leader.Tests
         {
             var config = new LeaderConfigurationBuilder<TestService>()
                 .SetNodeId(nodeid)
-                .AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
-                .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                .Lease(lcb =>
+                {
+                    lcb.AquireLeaseEvery(TimeSpan.FromMilliseconds(100))
+                        .RenewLeaseEvery(TimeSpan.FromMilliseconds(50))
+                        .WithLeaseManager(manager);
+                })
                 .WhenStarted(async (s, token) => await s.Start(token))
-                .WhenLeaderIsElected(whenLeaderElected)
-                .WithLeaseManager(builder => builder.Factory((c) => manager));
+                .WhenLeaderIsElected(whenLeaderElected);
 
             servicewithStopSupport = new TestService();
             runner = new Runner<TestService>(servicewithStopSupport, config.Build());

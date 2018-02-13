@@ -44,7 +44,7 @@ namespace Topshelf.Leader.Tests
                     builder.SetNodeId(nodeId);
                     builder.WhenStarted(async (service, token) => await service.Start(token));
                     builder.WhenStopping(stopRequestedSource);
-                    builder.WithLeaseManager(manager);
+                    builder.Lease(lcb => lcb.WithLeaseManager(manager));
                 });
 
             host.Run();

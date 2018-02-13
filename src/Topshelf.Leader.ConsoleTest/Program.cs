@@ -9,9 +9,9 @@ namespace Topshelf.Leader.ConsoleTest
         {
             var rc = HostFactory.Run(x =>
             {
-                var svc = new BadService();
+                var svc = new GoodService();
 
-                x.Service<BadService>(s =>
+                x.Service<GoodService>(s =>
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
@@ -30,12 +30,12 @@ namespace Topshelf.Leader.ConsoleTest
                         {
                             await service.Start(token);
                         });
-                        builder.WithLeaseManager(managerBuilder =>
+
+                        builder.Lease(lcb =>
                         {
-                            managerBuilder.RenewLeaseEvery(TimeSpan.FromSeconds(2));
-                            managerBuilder.AquireLeaseEvery(TimeSpan.FromSeconds(5));
-                            managerBuilder.LeaseLength(TimeSpan.FromDays(1));
-                            managerBuilder.Factory(c => new InMemoryLeaseManager(managerBuilder.NodeId));
+                            lcb.RenewLeaseEvery(TimeSpan.FromSeconds(2));
+                            lcb.AquireLeaseEvery(TimeSpan.FromSeconds(5));
+                            lcb.LeaseLength(TimeSpan.FromDays(1));
                         });
                     });
                     s.ConstructUsing(name => svc);

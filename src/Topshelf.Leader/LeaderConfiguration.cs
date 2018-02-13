@@ -10,7 +10,7 @@ namespace Topshelf.Leader
             Func<T, CancellationToken, Task> startup,
             string nodeId,
             ILeaseManager leaseManager,
-            LeaseManagerConfiguration leaseManagerConfiguration,
+            LeaseConfiguration leaseConfiguration,
             CancellationTokenSource serviceIsStopping, 
             Action<bool> whenLeaderIsElected)
         {
@@ -23,7 +23,7 @@ namespace Topshelf.Leader
             }
 
             NodeId = nodeId;
-            LeaseManagerConfiguration = leaseManagerConfiguration;
+            LeaseConfiguration = leaseConfiguration;
             ServiceIsStopping = serviceIsStopping;
             WhenLeaderIsElected = whenLeaderIsElected;
         }
@@ -38,6 +38,6 @@ namespace Topshelf.Leader
 
         public ILeaseManager LeaseManager { get; }
 
-        public LeaseManagerConfiguration LeaseManagerConfiguration { get; }
+        public LeaseConfiguration LeaseConfiguration { get; }
     }
 }

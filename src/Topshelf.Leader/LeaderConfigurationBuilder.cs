@@ -11,7 +11,7 @@ namespace Topshelf.Leader
         private string nodeId;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
-        private Action<LeaseManagerBuilder> leaseManagerAction;
+        private Action<LeaseConfigurationBuilder> leaseManagerAction = builder => builder.WithLeaseManager(c => new InMemoryLeaseManager(c.NodeId));
 
         public LeaderConfigurationBuilder()
         {
@@ -20,21 +20,9 @@ namespace Topshelf.Leader
             serviceIsStopping = new CancellationTokenSource();
         }
 
-        public LeaderConfigurationBuilder<T> WithLeaseManager(Action<LeaseManagerBuilder> action)
+        public LeaderConfigurationBuilder<T> Lease(Action<LeaseConfigurationBuilder> action)
         {
             leaseManagerAction = action ?? throw new ArgumentNullException(nameof(action));
-            return this;
-        }
-
-        public LeaderConfigurationBuilder<T> WithLeaseManager(ILeaseManager leaseManager)
-        {
-            if (leaseManager == null)
-            {
-                throw new ArgumentNullException(nameof(leaseManager));
-            }
-
-            leaseManagerAction = (b) => b.Factory((c) => leaseManager);
-
             return this;
         }
 
@@ -43,7 +31,6 @@ namespace Topshelf.Leader
             whenStarted = startup ?? throw new ArgumentNullException(nameof(startup));
             return this;
         }
-
 
         public LeaderConfigurationBuilder<T> SetNodeId(string id)
         {
@@ -73,19 +60,17 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
             }
 
-            var leaseManagerBuilder = new LeaseManagerBuilder(nodeId);
-
-            if (leaseManagerAction == null)
-            {
-                leaseManagerAction = builder => builder.Factory((c) => new InMemoryLeaseManager(this.nodeId));
-            }
-
+            var leaseManagerBuilder = new LeaseConfigurationBuilder(nodeId);
             leaseManagerAction(leaseManagerBuilder);
 
             var leaseManagerConfiguration = leaseManagerBuilder.Build();
-
-            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManagerConfiguration.LeaseManager(leaseManagerConfiguration), leaseManagerConfiguration, serviceIsStopping, whenLeaderIsElected);
+            return new LeaderConfiguration<T>(
+                whenStarted,
+                nodeId,
+                leaseManagerConfiguration.LeaseManager(leaseManagerConfiguration),
+                leaseManagerConfiguration,
+                serviceIsStopping,
+                whenLeaderIsElected);
         }
-
     }
 }

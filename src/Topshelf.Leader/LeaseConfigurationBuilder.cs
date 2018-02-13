@@ -3,16 +3,16 @@ using Topshelf.Leader.InMemory;
 
 namespace Topshelf.Leader
 {
-    public class LeaseManagerBuilder
+    public class LeaseConfigurationBuilder
     {
-        internal static readonly TimeSpan DefaultTimeBetweenLeaseUpdates = TimeSpan.FromSeconds(5);
-        internal static readonly TimeSpan DefaultTimeBetweenCheckingLeaderHealth = TimeSpan.FromSeconds(60);
+        internal static readonly TimeSpan DefaultTimeBetweenRenewing = TimeSpan.FromSeconds(5);
+        internal static readonly TimeSpan DefaultTimeBetweenAquiring = TimeSpan.FromSeconds(60);
 
         public string NodeId { get; }
-        private Func<LeaseManagerConfiguration,ILeaseManager> managerFunc;
-        private Func<ILeaseLengthCalculator> calculatorFunc;
-        private TimeSpan timeBetweenRenewing = DefaultTimeBetweenLeaseUpdates;
-        private TimeSpan timeBetweenAquiring = DefaultTimeBetweenCheckingLeaderHealth;
+        private Func<LeaseConfiguration,ILeaseManager> managerFunc;
+        private Func<ILeaseLengthCalculator> calculatorFunc = () => new FixedLengthCalculator(DefaultTimeBetweenRenewing);
+        private TimeSpan timeBetweenRenewing = DefaultTimeBetweenRenewing;
+        private TimeSpan timeBetweenAquiring = DefaultTimeBetweenAquiring;
 
         private class FixedLengthCalculator : ILeaseLengthCalculator
         {
@@ -29,13 +29,13 @@ namespace Topshelf.Leader
             }
         }
 
-        public LeaseManagerBuilder(string nodeId)
+        public LeaseConfigurationBuilder(string nodeId)
         {
             NodeId = nodeId;
             managerFunc = (c) => new InMemoryLeaseManager(nodeId);
         }
 
-        public LeaseManagerBuilder RenewLeaseEvery(TimeSpan time)
+        public LeaseConfigurationBuilder RenewLeaseEvery(TimeSpan time)
         {
             if (time <= TimeSpan.Zero)
             {
@@ -47,7 +47,7 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaseManagerBuilder AquireLeaseEvery(TimeSpan time)
+        public LeaseConfigurationBuilder AquireLeaseEvery(TimeSpan time)
         {
             if (time <= TimeSpan.Zero)
             {
@@ -59,13 +59,13 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaseManagerBuilder LeaseLength(Func<ILeaseLengthCalculator> calculator)
+        public LeaseConfigurationBuilder LeaseLength(Func<ILeaseLengthCalculator> calculator)
         {
             calculatorFunc = calculator ?? throw new ArgumentNullException(nameof(calculator));
             return this;
         }
 
-        public LeaseManagerBuilder LeaseLength(TimeSpan length)
+        public LeaseConfigurationBuilder LeaseLength(TimeSpan length)
         {
             if (length <= TimeSpan.Zero)
             {
@@ -75,13 +75,24 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaseManagerBuilder Factory(Func<LeaseManagerConfiguration,ILeaseManager> manager)
+        public LeaseConfigurationBuilder WithLeaseManager(Func<LeaseConfiguration,ILeaseManager> manager)
         {
             managerFunc = manager ?? throw new ArgumentNullException(nameof(manager));
             return this;
         }
 
-        public LeaseManagerConfiguration Build()
+        public LeaseConfigurationBuilder WithLeaseManager(ILeaseManager manager)
+        {
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
+
+            managerFunc = c => manager;
+            return this;
+        }
+
+        public LeaseConfiguration Build()
         {
             if (timeBetweenAquiring <= timeBetweenRenewing)
             {
@@ -89,7 +100,7 @@ namespace Topshelf.Leader
             }
 
             var leaseCriteria = new LeaseCriteria(timeBetweenRenewing, timeBetweenAquiring);
-            return new LeaseManagerConfiguration(managerFunc, calculatorFunc(), leaseCriteria);
+            return new LeaseConfiguration(NodeId, managerFunc, calculatorFunc(), leaseCriteria);
         }
     }
 }

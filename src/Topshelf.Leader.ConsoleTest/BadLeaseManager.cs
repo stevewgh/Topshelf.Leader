@@ -40,7 +40,7 @@ namespace Topshelf.Leader.ConsoleTest
         {
             if (timeThatWeHaveBeenLeader.Elapsed.TotalSeconds >= secondsInEachState)
             {
-                throw new Exception("Leadership Manager Failed...");
+                throw new Exception("Leadership WithLeaseManager Failed...");
             }
         }
     }

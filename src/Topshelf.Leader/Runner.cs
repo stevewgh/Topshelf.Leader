@@ -82,10 +82,10 @@ namespace Topshelf.Leader
         private async Task BlockUntilWeAreTheLeader()
         {
             var token = config.ServiceIsStopping.Token;
-            while (!await config.LeaseManager.AcquireLease(new LeaseOptions(config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria), token))
+            while (!await config.LeaseManager.AcquireLease(new LeaseOptions(config.NodeId), token))
             {
-                logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria.AquireLeaseEvery);
-                await Task.Delay(config.LeaseManagerConfiguration.LeaseCriteria.AquireLeaseEvery, token);
+                logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaseConfiguration.LeaseCriteria.AquireLeaseEvery);
+                await Task.Delay(config.LeaseConfiguration.LeaseCriteria.AquireLeaseEvery, token);
             }
             logger.DebugFormat("NodeId {0} has been elected as leader", config.NodeId);
             config.WhenLeaderIsElected(true);
@@ -95,17 +95,23 @@ namespace Topshelf.Leader
         {
             try
             {
-                while (await config.LeaseManager.RenewLease(new LeaseOptions(config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria), stopRenewing))
+                while (await config.LeaseManager.RenewLease(new LeaseOptions(config.NodeId), stopRenewing))
                 {
-                    logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria.RenewLeaseEvery);
-                    await Task.Delay(config.LeaseManagerConfiguration.LeaseCriteria.RenewLeaseEvery, stopRenewing);
+                    logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseConfiguration.LeaseCriteria.RenewLeaseEvery);
+                    await Task.Delay(config.LeaseConfiguration.LeaseCriteria.RenewLeaseEvery, stopRenewing);
                 }
             }
             finally 
             {
                 logger.DebugFormat("NodeId {0} stopped renewing the lease.", config.NodeId);
-                noLongerTheLeader.Cancel();
-                config.WhenLeaderIsElected(false);
+                try
+                {
+                    noLongerTheLeader.Cancel();
+                }
+                finally
+                {
+                    config.WhenLeaderIsElected(false);
+                }
             }
         }
     }
