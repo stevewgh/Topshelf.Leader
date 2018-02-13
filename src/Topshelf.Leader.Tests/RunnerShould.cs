@@ -114,16 +114,18 @@ namespace Topshelf.Leader.Tests
             A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
         }
 
-        [Fact]
-        public async Task should_invoke_the_heartbeat_at_set_intervals()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task should_invoke_the_heartbeat_at_set_intervals(bool isLeader)
         {
             var service = BuildBlockingTestService();
             var manager = A.Fake<ILeaseManager>();
-            const int milliSecondsBeforeServiceStops = 1000;
+            const int milliSecondsBeforeServiceStops = 2000;
             const int milliSecondsBetweenHeartBeats = 200;
             var invocationTimes = new List<DateTime>();
-            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
-            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(isLeader));
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(isLeader));
 
             var config = new LeaderConfigurationBuilder<ITestService>()
                 .WhenStopping(new CancellationTokenSource(milliSecondsBeforeServiceStops))
@@ -274,11 +276,10 @@ namespace Topshelf.Leader.Tests
         }
 
         [Fact]
-        public async Task should_bubble_exceptions_if_the_service_and_leadershipmanager_and_heartbeat_throw_exceptions()
+        public async Task should_bubble_exceptions_if_the_service_and_leadershipmanager_throw_exceptions()
         {
             var serviceException = new Exception("Service stopped working");
             var leadershipManagerException = new Exception("Leadership manager stopped working");
-            var heartBeatException = new Exception("Error on heartbeat");
             var service = BuildBadTestService(serviceException);
             var manager = A.Fake<ILeaseManager>();
             A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
@@ -290,13 +291,11 @@ namespace Topshelf.Leader.Tests
                     await svc.Start(token);
                 })
                 .Lease(lcb => lcb.WithLeaseManager(manager))
-                .WithHeartBeat(TimeSpan.Zero, (b, token) => throw heartBeatException)
                 .Build();
 
             var thrownException = await Assert.ThrowsAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
             Assert.Contains(serviceException, thrownException.InnerExceptions);
             Assert.Contains(leadershipManagerException, thrownException.InnerExceptions);
-            Assert.Contains(heartBeatException, thrownException.InnerExceptions);
         }
 
         [Fact]
@@ -315,6 +314,29 @@ namespace Topshelf.Leader.Tests
                     await svc.Start(token);
                 })
                 .Lease(lcb => lcb.WithLeaseManager(manager))
+                .Build();
+
+            await Assert.ThrowsAnyAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());
+            Assert.True(serviceStopping.IsCancellationRequested);
+        }
+
+        [Fact]
+        public async Task should_set_the_cancellation_token_when_unhandled_exceptions_occur_in_the_heartbeat()
+        {
+            var exception = new Exception("Error in heartbeat");
+            var service = BuildBlockingTestService();
+            var manager = A.Fake<ILeaseManager>();
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).Returns(Task.FromResult(true));
+
+            var serviceStopping = new CancellationTokenSource();
+            var config = new LeaderConfigurationBuilder<ITestService>()
+                .WhenStopping(serviceStopping)
+                .WhenStarted(async (svc, token) =>
+                {
+                    await svc.Start(token);
+                })
+                .Lease(lcb => lcb.WithLeaseManager(manager))
+                .WithHeartBeat(TimeSpan.Zero, (b, token) => throw exception)
                 .Build();
 
             await Assert.ThrowsAnyAsync<AggregateException>(async () => await new Runner<ITestService>(service, config).Start());

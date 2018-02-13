@@ -38,6 +38,14 @@ public class Program
                   {
                       await service.Start(token);
                   });
+
+                  builder.WithHeartBeat(
+                      TimeSpan.FromSeconds(30),
+                      (isLeader, token) =>
+                      {
+						  // Track metrics here
+	                      return Task.CompletedTask;
+                      });
               });
               s.ConstructUsing(name => new TheService());
               s.WhenStopped(service => service.Stop());

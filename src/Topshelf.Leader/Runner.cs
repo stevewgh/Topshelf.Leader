@@ -23,9 +23,22 @@ namespace Topshelf.Leader
         {
             while (!config.ServiceIsStopping.IsCancellationRequested)
             {
+                var heartBeatTask = HeartBeat(config.ServiceIsStopping.Token);
                 try
                 {
-                    await BlockUntilWeAreTheLeader();
+                    var blockUntilLeaderTask = BlockUntilWeAreTheLeader();
+                    var aggregateBlockTask = await Task.WhenAny(blockUntilLeaderTask, heartBeatTask);
+                    
+                    if (heartBeatTask.IsFaulted)
+                    {
+                        config.ServiceIsStopping.Cancel();
+                        if (heartBeatTask.Exception != null)
+                        {
+                            throw new AggregateException(heartBeatTask.Exception.GetBaseException());
+                        }
+                    }
+
+                    await aggregateBlockTask;
                 }
                 catch (TaskCanceledException)
                 {
@@ -40,8 +53,7 @@ namespace Topshelf.Leader
                         {
                             var leaseTask = RenewLease(linkedTokenSource.Token, noLongerTheLeader);
                             var startupTask = config.Startup(service, linkedTokenSource.Token);
-                            var heartBeatTask = HeartBeat();
-                            var whenAnyTask = await Task.WhenAny(heartBeatTask, leaseTask, startupTask);
+                            var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
 
                             var exceptions = new List<Exception>();
                             if (startupTask.IsFaulted)
@@ -58,14 +70,6 @@ namespace Topshelf.Leader
                                 if (leaseTask.Exception != null)
                                 {
                                     exceptions.Add(leaseTask.Exception.GetBaseException());
-                                }
-                            }
-
-                            if (heartBeatTask.IsFaulted)
-                            {
-                                if (heartBeatTask.Exception != null)
-                                {
-                                    exceptions.Add(heartBeatTask.Exception.GetBaseException());
                                 }
                             }
 
@@ -124,13 +128,12 @@ namespace Topshelf.Leader
             }
         }
         
-        private async Task HeartBeat()
+        private async Task HeartBeat(CancellationToken token)
         {
-            var token = config.ServiceIsStopping.Token;
             while (!token.IsCancellationRequested)
             {
                 logger.DebugFormat("NodeId {0} executing heartbeart [IsLeader: {1}]", this.config.NodeId, this.config.IsLeader);
-                config.OnHeartBeat(config.IsLeader, token);
+                await config.OnHeartBeat(config.IsLeader, token);
                 await Task.Delay(config.HeartBeatInterval, token);
             }
         }

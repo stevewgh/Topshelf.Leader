@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Topshelf.Leader.InMemory;
 
 namespace Topshelf.Leader.ConsoleTest
@@ -36,6 +37,12 @@ namespace Topshelf.Leader.ConsoleTest
                             lcb.RenewLeaseEvery(TimeSpan.FromSeconds(2));
                             lcb.AquireLeaseEvery(TimeSpan.FromSeconds(5));
                             lcb.WithLeaseManager(configuration => new InMemoryLeaseManager(configuration.NodeId));
+                        });
+
+                        builder.WithHeartBeat(TimeSpan.FromSeconds(5), (b, token) =>
+                        {
+                            Console.WriteLine($"Heartbeat [IsLeader: {b}] {DateTime.UtcNow:HH:mm:ss.fff}");
+                            return Task.CompletedTask;
                         });
                     });
                     s.ConstructUsing(name => svc);
