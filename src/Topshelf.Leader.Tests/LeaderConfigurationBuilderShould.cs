@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Xunit;
@@ -50,6 +51,22 @@ namespace Topshelf.Leader.Tests
             builder.Lease(managerBuilder => managerBuilder.WithLeaseManager((c) => manager));
 
             Assert.Same(manager, builder.Build().LeaseManager);
+        }
+
+        [Fact]
+        public void use_the_hearbeat_that_was_provided()
+        {
+            var heartBeatInterval = TimeSpan.Zero;
+            var onHeartBeat = new Func<bool, CancellationToken, Task>((isActive, token) => Task.CompletedTask);
+
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => Task.CompletedTask);
+            builder.WithHeartBeat(heartBeatInterval, onHeartBeat);
+
+            var config = builder.Build();
+
+            Assert.Equal(heartBeatInterval, config.HeartBeatInterval);
+            Assert.Equal(onHeartBeat, config.OnHeartBeat);
         }
     }
 }
