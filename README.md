@@ -43,8 +43,8 @@ public class Program
                       TimeSpan.FromSeconds(30),
                       (isLeader, token) =>
                       {
-						  // Track metrics here
-	                      return Task.CompletedTask;
+                          // Track metrics here
+                          return Task.CompletedTask;
                       });
               });
               s.ConstructUsing(name => new TheService());
