@@ -12,6 +12,8 @@ namespace Topshelf.Leader
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
         private Action<LeaseConfigurationBuilder> leaseManagerAction = builder => builder.WithLeaseManager(c => new InMemoryLeaseManager(c.NodeId));
+        private TimeSpan heartBeatInterval = TimeSpan.FromSeconds(30);
+        private Func<bool, CancellationToken, Task> onHeartBeat = (b, token) => Task.FromResult(true);
 
         public LeaderConfigurationBuilder()
         {
@@ -44,6 +46,13 @@ namespace Topshelf.Leader
             return this;
         }
 
+        public LeaderConfigurationBuilder<T> WithHeartBeat(TimeSpan heartBeatInterval, Func<bool, CancellationToken, Task> onHeartBeat)
+        {
+            this.heartBeatInterval = heartBeatInterval;
+            this.onHeartBeat = onHeartBeat ?? throw new ArgumentNullException(nameof(onHeartBeat));
+            return this;
+        }
+
         internal bool ServiceStoppingTokenIsSet { get; private set; }
 
         internal LeaderConfigurationBuilder<T> WhenStopping(CancellationTokenSource serviceStopping)
@@ -70,7 +79,9 @@ namespace Topshelf.Leader
                 leaseManagerConfiguration.LeaseManager(leaseManagerConfiguration),
                 leaseManagerConfiguration,
                 serviceIsStopping,
-                whenLeaderIsElected);
+                whenLeaderIsElected,
+                heartBeatInterval,
+                onHeartBeat);
         }
     }
 }

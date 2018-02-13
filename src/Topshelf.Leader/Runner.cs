@@ -40,7 +40,8 @@ namespace Topshelf.Leader
                         {
                             var leaseTask = RenewLease(linkedTokenSource.Token, noLongerTheLeader);
                             var startupTask = config.Startup(service, linkedTokenSource.Token);
-                            var whenAnyTask = await Task.WhenAny(leaseTask, startupTask);
+                            var heartBeatTask = HeartBeat();
+                            var whenAnyTask = await Task.WhenAny(heartBeatTask, leaseTask, startupTask);
 
                             var exceptions = new List<Exception>();
                             if (startupTask.IsFaulted)
@@ -57,6 +58,14 @@ namespace Topshelf.Leader
                                 if (leaseTask.Exception != null)
                                 {
                                     exceptions.Add(leaseTask.Exception.GetBaseException());
+                                }
+                            }
+
+                            if (heartBeatTask.IsFaulted)
+                            {
+                                if (heartBeatTask.Exception != null)
+                                {
+                                    exceptions.Add(heartBeatTask.Exception.GetBaseException());
                                 }
                             }
 
@@ -112,6 +121,17 @@ namespace Topshelf.Leader
                 {
                     config.WhenLeaderIsElected(false);
                 }
+            }
+        }
+        
+        private async Task HeartBeat()
+        {
+            var token = config.ServiceIsStopping.Token;
+            while (!token.IsCancellationRequested)
+            {
+                logger.DebugFormat("NodeId {0} executing heartbeart [IsLeader: {1}]", this.config.NodeId, this.config.IsLeader);
+                config.OnHeartBeat(config.IsLeader, token);
+                await Task.Delay(config.HeartBeatInterval, token);
             }
         }
     }
