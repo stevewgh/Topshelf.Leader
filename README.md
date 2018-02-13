@@ -63,7 +63,7 @@ The `WhenStarted()` method will be executed when the service discovers that it i
             }
         }
 
-		public void Stop()
+	public void Stop()
         {
             // Tidy up unmanaged resources
         }
@@ -118,19 +118,19 @@ public class InMemoryLeaseManager : ILeaseManager
         this.owningNodeId = newLeaderId;
     }
 
-    public Task<bool> AcquireLease(string nodeId, CancellationToken token)
+    public Task<bool> AcquireLease(LeaseOptions options, CancellationToken token)
     {
-        return Task.FromResult(nodeId == owningNodeId);
+        return Task.FromResult(options.NodeId == owningNodeId);
     }
 
-    public Task<bool> RenewLease(string nodeId, CancellationToken token)
+    public Task<bool> RenewLease(LeaseOptions options, CancellationToken token)
     {
-        return Task.FromResult(nodeId == owningNodeId);
+        return Task.FromResult(options.NodeId == owningNodeId);
     }
 
-    public Task ReleaseLease(string nodeId)
+    public Task ReleaseLease(LeaseReleaseOptions options)
     {
-		owningNodeId = string.Empty;
+	owningNodeId = string.Empty;
         return Task.FromResult(true);
     }
 }
