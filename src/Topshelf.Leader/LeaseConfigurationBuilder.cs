@@ -10,29 +10,14 @@ namespace Topshelf.Leader
 
         public string NodeId { get; }
         private Func<LeaseConfiguration,ILeaseManager> managerFunc;
-        private Func<ILeaseLengthCalculator> calculatorFunc = () => new FixedLengthCalculator(DefaultTimeBetweenRenewing);
+        private Func<ILeaseLengthCalculator> calculatorFunc = () => new StubLeaseLengthCalculator(DefaultTimeBetweenRenewing);
         private TimeSpan timeBetweenRenewing = DefaultTimeBetweenRenewing;
         private TimeSpan timeBetweenAquiring = DefaultTimeBetweenAquiring;
-
-        private class FixedLengthCalculator : ILeaseLengthCalculator
-        {
-            private readonly TimeSpan fixedLength;
-
-            public FixedLengthCalculator(TimeSpan fixedLength)
-            {
-                this.fixedLength = fixedLength;
-            }
-
-            public TimeSpan Calculate(LeaseCriteria leaseCriteria)
-            {
-                return fixedLength;
-            }
-        }
 
         public LeaseConfigurationBuilder(string nodeId)
         {
             NodeId = nodeId;
-            managerFunc = (c) => new InMemoryLeaseManager(nodeId);
+            managerFunc = c => new InMemoryLeaseManager(nodeId);
         }
 
         public LeaseConfigurationBuilder RenewLeaseEvery(TimeSpan time)
@@ -71,7 +56,7 @@ namespace Topshelf.Leader
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "Must be greater than zero.");
             }
-            calculatorFunc = () => new FixedLengthCalculator(length);
+            calculatorFunc = () => new StubLeaseLengthCalculator(length);
             return this;
         }
 

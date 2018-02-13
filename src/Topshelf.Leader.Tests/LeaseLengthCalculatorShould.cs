@@ -17,9 +17,9 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void calculate_a_lease_length_greater_than_zero()
         {
-            var sut = new LeaseLengthCalculator();
+            var sut = new LeaseLengthCalculator(leaseCriteria);
 
-            var length = sut.Calculate(leaseCriteria);
+            var length = sut.Calculate();
 
             Assert.True(length > TimeSpan.Zero);
         }
@@ -27,9 +27,9 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void calculate_a_lease_length_no_larger_than_the_lease_aquire_time()
         {
-            var sut = new LeaseLengthCalculator();
+            var sut = new LeaseLengthCalculator(leaseCriteria);
 
-            var length = sut.Calculate(leaseCriteria);
+            var length = sut.Calculate();
 
             Assert.True(length <= aquireLeaseEvery);
         }
@@ -37,9 +37,9 @@ namespace Topshelf.Leader.Tests
         [Fact]
         public void calculate_a_lease_length_larger_than_the_lease_renewal_time()
         {
-            var sut = new LeaseLengthCalculator();
+            var sut = new LeaseLengthCalculator(leaseCriteria);
 
-            var length = sut.Calculate(leaseCriteria);
+            var length = sut.Calculate();
 
             Assert.True(length > renewLeaseEvery);
         }
