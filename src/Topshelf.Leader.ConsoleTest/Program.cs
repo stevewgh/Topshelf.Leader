@@ -15,8 +15,6 @@ namespace Topshelf.Leader.ConsoleTest
                 {
                     s.WhenStartedAsLeader(builder =>
                     {
-                        builder.RenewLeaseEvery(TimeSpan.FromSeconds(2));
-                        builder.AquireLeaseEvery(TimeSpan.FromSeconds(5));
                         builder.WhenLeaderIsElected(iamLeader =>
                         {
                             if (iamLeader)
@@ -34,7 +32,10 @@ namespace Topshelf.Leader.ConsoleTest
                         });
                         builder.WithLeaseManager(managerBuilder =>
                         {
-                            managerBuilder.Factory(criteria => new InMemoryLeaseManager(managerBuilder.NodeId));
+                            managerBuilder.RenewLeaseEvery(TimeSpan.FromSeconds(2));
+                            managerBuilder.AquireLeaseEvery(TimeSpan.FromSeconds(5));
+                            managerBuilder.LeaseLength(TimeSpan.FromDays(1));
+                            managerBuilder.Factory(c => new InMemoryLeaseManager(managerBuilder.NodeId));
                         });
                     });
                     s.ConstructUsing(name => svc);

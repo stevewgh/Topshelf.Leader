@@ -63,7 +63,7 @@ namespace Topshelf.Leader.Tests
             builder.RenewLeaseEvery(leaseUpdate);
             builder.AquireLeaseEvery(TimeSpan.FromDays(2));
 
-            Assert.Equal(leaseUpdate, builder.Build().LeaseCriteria.RenewLeaseEvery);
+            Assert.Equal(leaseUpdate, builder.Build().LeaseManagerConfiguration.RenewLeaseEvery);
         }
 
         [Theory]
@@ -87,7 +87,7 @@ namespace Topshelf.Leader.Tests
             builder.WhenStarted((o, token) => Task.CompletedTask);
             builder.AquireLeaseEvery(healthCheckEvery);
 
-            Assert.Equal(healthCheckEvery, builder.Build().LeaseCriteria.AquireLeaseEvery);
+            Assert.Equal(healthCheckEvery, builder.Build().LeaseManagerConfiguration.AquireLeaseEvery);
         }
 
         [Theory]
@@ -109,7 +109,7 @@ namespace Topshelf.Leader.Tests
 
             var builder = new LeaderConfigurationBuilder<object>();
             builder.WhenStarted((o, token) => Task.CompletedTask);
-            builder.WithLeaseManager(managerBuilder => managerBuilder.Factory(criteria => manager));
+            builder.WithLeaseManager(managerBuilder => managerBuilder.Factory((c) => manager));
 
             Assert.Same(manager, builder.Build().LeaseManager);
         }

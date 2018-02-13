@@ -7,12 +7,7 @@ namespace Topshelf.Leader
 {
     public class LeaderConfigurationBuilder<T>
     {
-        internal readonly TimeSpan DefaultTimeBetweenLeaseUpdates = TimeSpan.FromSeconds(5);
-        internal readonly TimeSpan DefaultTimeBetweenCheckingLeaderHealth = TimeSpan.FromSeconds(60);
-
         private Func<T, CancellationToken, Task> whenStarted;
-        private TimeSpan timeBetweenRenewing;
-        private TimeSpan timeBetweenAquiring;
         private string nodeId;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
@@ -20,8 +15,6 @@ namespace Topshelf.Leader
 
         public LeaderConfigurationBuilder()
         {
-            timeBetweenRenewing = DefaultTimeBetweenLeaseUpdates;
-            timeBetweenAquiring = DefaultTimeBetweenCheckingLeaderHealth;
             nodeId = Guid.NewGuid().ToString();
             whenLeaderIsElected = b => { };
             serviceIsStopping = new CancellationTokenSource();
@@ -40,7 +33,7 @@ namespace Topshelf.Leader
                 throw new ArgumentNullException(nameof(leaseManager));
             }
 
-            leaseManagerAction = (b) => b.Factory(criteria => leaseManager);
+            leaseManagerAction = (b) => b.Factory((c) => leaseManager);
 
             return this;
         }
@@ -51,29 +44,6 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaderConfigurationBuilder<T> RenewLeaseEvery(TimeSpan time)
-        {
-            if (time <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(time), "Must be greater than zero.");
-            }
-
-            timeBetweenRenewing = time;
-
-            return this;
-        }
-
-        public LeaderConfigurationBuilder<T> AquireLeaseEvery(TimeSpan time)
-        {
-            if (time <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(time), "Must be greater than zero.");
-            }
-
-            timeBetweenAquiring = time;
-
-            return this;
-        }
 
         public LeaderConfigurationBuilder<T> SetNodeId(string id)
         {
@@ -103,22 +73,18 @@ namespace Topshelf.Leader
                 throw new HostConfigurationException($"{nameof(WhenStarted)} must be provided.");
             }
 
-            if (timeBetweenAquiring <= timeBetweenRenewing)
-            {
-                throw new HostConfigurationException($"{nameof(AquireLeaseEvery)} must be greater than {nameof(RenewLeaseEvery)}.");
-            }
-
-            var leaseCriteria = new LeaseCriteria(timeBetweenRenewing, timeBetweenAquiring);
-            var leaseManagerBuilder = new LeaseManagerBuilder(nodeId, leaseCriteria);
+            var leaseManagerBuilder = new LeaseManagerBuilder(nodeId);
 
             if (leaseManagerAction == null)
             {
-                leaseManagerAction = builder => builder.Factory(criteria => new InMemoryLeaseManager(this.nodeId));
+                leaseManagerAction = builder => builder.Factory((c) => new InMemoryLeaseManager(this.nodeId));
             }
 
             leaseManagerAction(leaseManagerBuilder);
 
-            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManagerBuilder.Build(), leaseCriteria, serviceIsStopping, whenLeaderIsElected);
+            var leaseManagerConfiguration = leaseManagerBuilder.Build();
+
+            return new LeaderConfiguration<T>(whenStarted, nodeId, leaseManagerConfiguration.LeaseManager(leaseManagerConfiguration), leaseManagerConfiguration, serviceIsStopping, whenLeaderIsElected);
         }
 
     }

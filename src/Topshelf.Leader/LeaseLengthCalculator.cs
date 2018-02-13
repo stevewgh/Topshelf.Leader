@@ -2,7 +2,12 @@
 
 namespace Topshelf.Leader
 {
-    public class LeaseLengthCalculator
+    public interface ILeaseLengthCalculator
+    {
+        TimeSpan Calculate(LeaseCriteria leaseCriteria);
+    }
+
+    public class LeaseLengthCalculator : ILeaseLengthCalculator
     {
         public virtual TimeSpan Calculate(LeaseCriteria leaseCriteria)
         {

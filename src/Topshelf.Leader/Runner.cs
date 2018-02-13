@@ -82,10 +82,10 @@ namespace Topshelf.Leader
         private async Task BlockUntilWeAreTheLeader()
         {
             var token = config.ServiceIsStopping.Token;
-            while (!await config.LeaseManager.AcquireLease(new LeaseOptions(config.NodeId, config.LeaseCriteria), token))
+            while (!await config.LeaseManager.AcquireLease(new LeaseOptions(config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria), token))
             {
-                logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaseCriteria.AquireLeaseEvery);
-                await Task.Delay(config.LeaseCriteria.AquireLeaseEvery, token);
+                logger.DebugFormat("NodeId {0} failed to aquire a lease. Waiting {1}", config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria.AquireLeaseEvery);
+                await Task.Delay(config.LeaseManagerConfiguration.LeaseCriteria.AquireLeaseEvery, token);
             }
             logger.DebugFormat("NodeId {0} has been elected as leader", config.NodeId);
             config.WhenLeaderIsElected(true);
@@ -95,10 +95,10 @@ namespace Topshelf.Leader
         {
             try
             {
-                while (await config.LeaseManager.RenewLease(new LeaseOptions(config.NodeId, config.LeaseCriteria), stopRenewing))
+                while (await config.LeaseManager.RenewLease(new LeaseOptions(config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria), stopRenewing))
                 {
-                    logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseCriteria.RenewLeaseEvery);
-                    await Task.Delay(config.LeaseCriteria.RenewLeaseEvery, stopRenewing);
+                    logger.DebugFormat("NodeId {0} renewed the lease. Waiting {1}", config.NodeId, config.LeaseManagerConfiguration.LeaseCriteria.RenewLeaseEvery);
+                    await Task.Delay(config.LeaseManagerConfiguration.LeaseCriteria.RenewLeaseEvery, stopRenewing);
                 }
             }
             finally 
