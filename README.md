@@ -94,7 +94,14 @@ var rc = HostFactory.Run(x =>
             {
                 await service.Start(token);
             });
-            builder.WithLeaseManager(new YourManagerHere());
+
+            builder.Lease(lcb =>
+            {
+                lcb.RenewLeaseEvery(TimeSpan.FromSeconds(2))
+					.AquireLeaseEvery(TimeSpan.FromSeconds(5))
+					.LeaseLength(TimeSpan.FromDays(1))
+					.WithLeaseManager(new YourManagerHere());
+            });
         });
         s.ConstructUsing(name => new TheService());
         s.WhenStopped(service => service.Stop());
