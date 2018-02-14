@@ -77,7 +77,7 @@ namespace Topshelf.Leader
             return this;
         }
 
-        public LeaseConfiguration Build()
+        public LeaseConfigurationIncludingManager Build()
         {
             if (timeBetweenAquiring <= timeBetweenRenewing)
             {
@@ -85,7 +85,7 @@ namespace Topshelf.Leader
             }
 
             var leaseCriteria = new LeaseCriteria(timeBetweenRenewing, timeBetweenAquiring);
-            return new LeaseConfiguration(NodeId, managerFunc, calculatorFunc(), leaseCriteria);
+            return new LeaseConfigurationIncludingManager(NodeId, managerFunc, calculatorFunc(), leaseCriteria);
         }
     }
 }

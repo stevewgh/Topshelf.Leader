@@ -9,17 +9,17 @@ namespace Topshelf.Leader
 
     public class LeaseLengthCalculator : ILeaseLengthCalculator
     {
-        private readonly LeaseCriteria leaseCriteria;
+        protected readonly LeaseCriteria LeaseCriteria;
 
         public LeaseLengthCalculator(LeaseCriteria leaseCriteria)
         {
-            this.leaseCriteria = leaseCriteria;
+            this.LeaseCriteria = leaseCriteria;
         }
 
         public virtual TimeSpan Calculate()
         {
-            return TimeSpan.FromSeconds((leaseCriteria.RenewLeaseEvery.TotalSeconds +
-                                  leaseCriteria.AquireLeaseEvery.TotalSeconds) / 2);
+            return TimeSpan.FromSeconds((LeaseCriteria.RenewLeaseEvery.TotalSeconds +
+                                  LeaseCriteria.AquireLeaseEvery.TotalSeconds) / 2);
         }
     }
 }

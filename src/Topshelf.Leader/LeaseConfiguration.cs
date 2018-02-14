@@ -6,13 +6,11 @@ namespace Topshelf.Leader
     {
         public string NodeId { get; }
 
-        internal Func<LeaseConfiguration,ILeaseManager> LeaseManager { get; }
-
         public ILeaseLengthCalculator LeaseLengthCalculator { get; }
 
         public LeaseCriteria LeaseCriteria { get; }
 
-        public LeaseConfiguration(string nodeId, Func<LeaseConfiguration,ILeaseManager> leaseManager, ILeaseLengthCalculator leaseLengthCalculator, LeaseCriteria leaseCriteria)
+        public LeaseConfiguration(string nodeId, ILeaseLengthCalculator leaseLengthCalculator, LeaseCriteria leaseCriteria)
         {
             if (string.IsNullOrEmpty(nodeId))
             {
@@ -20,7 +18,6 @@ namespace Topshelf.Leader
             }
 
             NodeId = nodeId;
-            LeaseManager = leaseManager ?? throw new ArgumentNullException(nameof(leaseManager));
             LeaseLengthCalculator = leaseLengthCalculator ?? throw new ArgumentNullException(nameof(leaseLengthCalculator));
             LeaseCriteria = leaseCriteria;
         }

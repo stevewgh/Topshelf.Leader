@@ -11,7 +11,7 @@ namespace Topshelf.Leader
         private string nodeId;
         private CancellationTokenSource serviceIsStopping;
         private Action<bool> whenLeaderIsElected;
-        private Action<LeaseConfigurationBuilder> leaseManagerAction = builder => builder.WithLeaseManager(c => new InMemoryLeaseManager(c.NodeId));
+        private Action<LeaseConfigurationBuilder> leaseManagerAction = builder => builder.WithInMemoryLeaseManager();
         private TimeSpan heartBeatInterval = TimeSpan.FromSeconds(30);
         private Func<bool, CancellationToken, Task> onHeartBeat = (b, token) => Task.FromResult(true);
 

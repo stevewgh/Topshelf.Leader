@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using FakeItEasy;
 using Topshelf.HostConfigurators;
 using Topshelf.Hosts;
+using Topshelf.Leader.InMemory;
 using Topshelf.Leader.Tests.Services;
 using Topshelf.Runtime.Windows;
 using Topshelf.ServiceConfigurators;
@@ -12,6 +14,17 @@ namespace Topshelf.Leader.Tests
 {
     public class TopShelfLeaderExtensionShould
     {
+        [Fact]
+        public void use_the_in_memory_lease_manager_when_an_alternative_manager_isnt_configured()
+        {
+            var builder = new LeaderConfigurationBuilder<object>();
+            builder.WhenStarted((o, token) => {  Console.WriteLine("Started"); return Task.CompletedTask; });
+
+            var built = builder.Build();
+
+            Assert.IsType<InMemoryLeaseManager>(built.LeaseManager);
+        }
+
         [Fact]
         public void hook_into_the_before_shutdown_to_stop_the_runloop()
         {

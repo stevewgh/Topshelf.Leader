@@ -36,7 +36,7 @@ namespace Topshelf.Leader.ConsoleTest
                         {
                             lcb.RenewLeaseEvery(TimeSpan.FromSeconds(2));
                             lcb.AquireLeaseEvery(TimeSpan.FromSeconds(5));
-                            lcb.WithLeaseManager(configuration => new InMemoryLeaseManager(configuration.NodeId));
+                            lcb.WithInMemoryLeaseManager();
                         });
 
                         builder.WithHeartBeat(TimeSpan.FromSeconds(5), (b, token) =>
