@@ -90,6 +90,8 @@ as follows:
 
 You configure which manager to use during the configuration stage. If one isn't supplied then an in memory manager is used. The in memory manager is not muti-process aware so it is **not suitable for production use**. 
 
+Consider using the [Topshelf.Leader.AzureBlob](https://github.com/stevewgh/Topshelf.Leader.AzureBlob) lease manager for production environments. It is backed by Azure Blob Storage and is perfectly suited to production loads. If that doesn't meet your requirements it's easy to [write your own](#example-of-a-simple-lease-manager).
+
 ### Configuring the lease manager
 ```c#
 var rc = HostFactory.Run(x =>
