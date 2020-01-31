@@ -63,8 +63,8 @@ namespace Topshelf.Leader.Tests
 
             await runner.Start();
 
-            A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Never);
-            A.CallTo(manager).MustHaveHappened(Repeated.AtLeast.Once);
+            A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).MustHaveHappened(0, Times.Exactly);
+            A.CallTo(manager).MustHaveHappened(1, Times.OrMore);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Topshelf.Leader.Tests
 
             await runner.Start();
 
-            A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
+            A.CallTo(() => service.Start(A<CancellationToken>.Ignored)).MustHaveHappened(1, Times.Exactly);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.Exactly.Once);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(1, Times.Exactly);
         }
 
         [Theory]
@@ -186,7 +186,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
+            A.CallTo(() => manager.AcquireLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(2, Times.OrMore);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Topshelf.Leader.Tests
             var runner = new Runner<ITestService>(service, config);
 
             await runner.Start();
-            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(Repeated.AtLeast.Twice);
+            A.CallTo(() => manager.RenewLease(A<LeaseOptions>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened(2, Times.OrMore);
         }
 
         [Fact]
