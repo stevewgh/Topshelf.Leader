@@ -1,9 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Topshelf.Logging;
 
 namespace Topshelf.Leader.InMemory
 {
+    using Logging;
+
     public class InMemoryLeaseManager : ILeaseManager
     {
         private string owningNodeId;
