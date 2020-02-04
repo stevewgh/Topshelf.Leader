@@ -1,4 +1,4 @@
-# Topshelf.Leader
+# Topshelf.Leader [![Build Status](https://dev.azure.com/stevewgh/Topshelf.Leader/_apis/build/status/stevewgh.Topshelf.Leader?branchName=master)](https://dev.azure.com/stevewgh/Topshelf.Leader/_build/latest?definitionId=4&branchName=master)
 
 An extension method to the Topshelf `ServiceConfigurator<T>` class that adds Leader checking to the service startup.
 
